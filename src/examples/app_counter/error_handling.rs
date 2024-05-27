@@ -2,8 +2,6 @@ use std::panic;
 
 use color_eyre::{config::HookBuilder, eyre};
 
-use super::app_counter;
-
 /// This replaces the standard color_eyre panic and error hooks with hooks that
 /// restore the terminal before printing the panic or error.
 pub fn install_hooks() -> color_eyre::Result<()> {
@@ -12,7 +10,7 @@ pub fn install_hooks() -> color_eyre::Result<()> {
     // convert from a color_eyre PanicHook to a standard panic hook
     let panic_hook = panic_hook.into_panic_hook();
     panic::set_hook(Box::new(move |panic_info| {
-        app_counter::restore().unwrap();
+        super::restore().unwrap();
         panic_hook(panic_info);
     }));
 
@@ -20,7 +18,7 @@ pub fn install_hooks() -> color_eyre::Result<()> {
     let eyre_hook = eyre_hook.into_eyre_hook();
     eyre::set_hook(Box::new(
         move |error: &(dyn std::error::Error + 'static)| {
-            app_counter::restore().unwrap();
+            super::restore().unwrap();
             eyre_hook(error)
         },
     ))?;

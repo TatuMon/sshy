@@ -20,11 +20,11 @@ use ratatui::{
 };
 
 use color_eyre::{
-    eyre::{bail, eyre, Context},
+    eyre::{eyre, Context},
     Result,
 };
 
-use super::error_handling;
+pub mod error_handling;
 
 /// A type alias for the terminal type used in this application
 pub type Tui = Terminal<CrosstermBackend<Stdout>>;
@@ -88,26 +88,20 @@ impl AppCounter {
     fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()> {
         match key_event.code {
             KeyCode::Char('q') => self.exit(),
-            KeyCode::Left => self.decrement_counter()?,
-            KeyCode::Right => self.increment_counter()?,
+            KeyCode::Left => self.decrement_counter(),
+            KeyCode::Right => self.increment_counter(),
             _ => {}
         };
 
         Ok(())
     }
 
-    fn decrement_counter(&mut self) -> Result<()> {
+    fn decrement_counter(&mut self) {
         self.counter = self.counter.saturating_sub(1);
-        Ok(())
     }
 
-    fn increment_counter(&mut self) -> Result<()> {
-        if self.counter >= 5 {
-            bail!("Can't go past 5")
-        } else {
-            self.counter = self.counter.saturating_add(1);
-            Ok(())
-        }
+    fn increment_counter(&mut self) {
+        self.counter = self.counter.saturating_add(1);
     }
 
     fn exit(&mut self) {
