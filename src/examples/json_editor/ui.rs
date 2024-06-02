@@ -2,7 +2,7 @@ use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style},
     text::{Line, Span, Text},
-    widgets::{Block, Borders, List, ListItem, Paragraph, BorderType},
+    widgets::{Block, BorderType, Borders, Clear, List, ListItem, Paragraph, Wrap},
     Frame,
 };
 
@@ -131,13 +131,65 @@ impl JsonEditorApp {
 
         let footer_chunks = Layout::default()
             .direction(Direction::Horizontal)
-            .constraints([
-                Constraint::Percentage(50),
-                Constraint::Percentage(50),
-            ])
+            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
             .split(chunks[2]);
 
         f.render_widget(mode_footer, footer_chunks[0]);
         f.render_widget(key_notes_footer, footer_chunks[1]);
+
+        if let Some(editing) = self.currently_editing.clone() {
+            self.draw_popup(f, editing);
+        }
+
+        if let CurrentScreen::Exiting = self.current_screen {
+            self.draw_exit_popup(f)
+        }
+    }
+
+    fn draw_popup(&self, f: &mut Frame, editing: CurrentlyEditing) {
+        let area = Self::centered_rect(60, 25, f.size());
+        f.render_widget(Clear, area);
+
+        let popup_chunks = Layout::default()
+            .direction(Direction::Horizontal)
+            .margin(1)
+            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
+            .split(area);
+        let mut key_block = Block::default().title("Key").borders(Borders::ALL);
+        let mut value_block = Block::default().title("Value").borders(Borders::ALL);
+
+        let active_style = Style::default().bg(Color::LightYellow).fg(Color::Black);
+
+        match editing {
+            CurrentlyEditing::Key => key_block = key_block.style(active_style),
+            CurrentlyEditing::Value => value_block = value_block.style(active_style),
+        };
+
+        let key_text = Paragraph::new(self.key_input.clone()).block(key_block);
+        f.render_widget(key_text, popup_chunks[0]);
+
+        let value_text = Paragraph::new(self.value_input.clone()).block(value_block);
+        f.render_widget(value_text, popup_chunks[1]);
+    }
+
+    fn draw_exit_popup(&self, f: &mut Frame) {
+        f.render_widget(Clear, f.size()); //this clears the entire screen and anything already drawn
+        let popup_block = Block::default()
+            .title("Y/N")
+            .borders(Borders::ALL)
+            .border_type(BorderType::Rounded)
+            .style(Style::default().bg(Color::DarkGray));
+
+        let exit_text = Text::styled(
+            "Would you like to output the buffer as json? (y/n)",
+            Style::default().fg(Color::Red),
+        );
+        // the `trim: false` will stop the text from being cut off when over the edge of the block
+        let exit_paragraph = Paragraph::new(exit_text)
+            .block(popup_block)
+            .wrap(Wrap { trim: false });
+
+        let area = Self::centered_rect(60, 25, f.size());
+        f.render_widget(exit_paragraph, area);
     }
 }

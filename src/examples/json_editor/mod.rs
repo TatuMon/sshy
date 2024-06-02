@@ -49,6 +49,7 @@ pub enum CurrentScreen {
     Exiting,
 }
 
+#[derive(Clone)]
 pub enum CurrentlyEditing {
     Key,
     Value,
@@ -79,8 +80,11 @@ impl JsonEditorApp {
 
     pub fn run_app<B: Backend>(&mut self, terminal: &mut Terminal<B>) -> io::Result<()> {
         loop {
-            terminal.draw(|f| self.ui(f));
+            terminal.draw(|f| self.ui(f))?;
             self.handle_input()?;
+            if self.exit {
+                return Ok(());
+            }
         }
     }
 
