@@ -1,12 +1,27 @@
-// use color_eyre::eyre::Result;
+pub mod events;
+pub mod model;
+pub mod terminal;
+pub mod ui;
 
-use std::error::Error;
+use color_eyre::eyre::Result;
+use events::poll_message;
+use model::Model;
+use terminal::{end_terminal, setup_terminal};
+use ui::draw;
 
-pub mod examples;
+fn main() -> Result<()> {
+    let mut terminal = setup_terminal()?;
 
-//fn main() -> Result<()> {
-fn main() -> Result<(), Box<dyn Error>> {
-    // examples::hello_world::run()
-    // examples::app_counter::run()
-    examples::json_editor::run()
+    let mut model = Model::default();
+    // Initial app draw
+    draw(&mut terminal, &model)?;
+
+    while !model.is_app_done() {
+        if let Some(message) = poll_message(&model)? {
+            model.update(message);
+            draw(&mut terminal, &model)?
+        }
+    }
+
+    end_terminal(terminal)
 }

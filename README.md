@@ -13,3 +13,6 @@ Features will be released in the following order:
 5. [ ] When showing the connection prompt, show known_hosts also
 
 #### Server features
+
+
+## To know about implementation details, read [here](src/implementation.md)
