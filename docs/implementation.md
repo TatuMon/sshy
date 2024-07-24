@@ -1,4 +1,4 @@
-# In this file I basically explain my desicion making
+# In this file I basically explain my decision making
 
 ## App design:
 Here I'm **trying** to follow [The Elm Architecture](https://guide.elm-lang.org/architecture/),
@@ -22,3 +22,6 @@ The app runs in the following way:
 5. If there's a message available, the app calls the `model.update` method, passing
 the current message and...
 6. [...] finally, it calls `ui.draw` to update the current frame
+
+## Sections
+The sections are the different areas displayed, each with it's own separate task
