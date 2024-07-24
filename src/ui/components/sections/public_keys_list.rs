@@ -1,7 +1,6 @@
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
-    style::Style,
-    widgets::{Block, BorderType, Borders, List, ListDirection, ListState},
+    widgets::{Block, BorderType, Borders, List, ListState},
     Frame,
 };
 
@@ -9,23 +8,20 @@ use crate::{ui::ui_utils::styles, utils};
 
 pub fn draw(f: &mut Frame) {
     let block = Block::default()
-        .title("Known hosts")
+        .title("Public keys")
         .borders(Borders::ALL)
-        .border_type(BorderType::Rounded)
-        .style(Style::default());
+        .border_type(BorderType::Rounded);
 
-    let items = utils::files::get_known_hosts().unwrap();
+    let items = utils::files::get_public_keys_names().unwrap_or_default();
 
     let list = List::default()
         .items(items)
-        .direction(ListDirection::TopToBottom)
-        .highlight_style(styles::highlighted_item())
-        .block(block);
+        .block(block)
+        .highlight_style(styles::highlighted_item());
 
     let mut list_state = ListState::default();
 
-    let area = get_area(f.size());
-    f.render_stateful_widget(list, area, &mut list_state);
+    f.render_stateful_widget(list, get_area(f.size()), &mut list_state);
 }
 
 fn get_area(frame_rect: Rect) -> Rect {
@@ -37,5 +33,5 @@ fn get_area(frame_rect: Rect) -> Rect {
     Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Percentage(33), Constraint::Percentage(33)])
-        .split(column)[0]
+        .split(column)[1]
 }

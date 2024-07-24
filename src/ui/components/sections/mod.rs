@@ -1,4 +1,5 @@
 pub mod known_hosts_list;
+pub mod public_keys_list;
 
 use serde::Serialize;
 
