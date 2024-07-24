@@ -6,5 +6,6 @@ pub enum Message {
     StopApp,
     ShowPopup(Popup),
     HidePopup,
-    SetSection(Section)
+    SetSection(Section),
+    Draw
 }

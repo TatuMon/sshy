@@ -22,6 +22,7 @@ pub fn poll_message(model: &Model) -> Result<Option<Message>> {
     if let Some(event) = poll_event()? {
         match event {
             Event::Key(key_event) => Ok(handle_key_event(key_event, model)),
+            Event::Resize(_, _) => Ok(Some(Message::Draw)),
             // Event::Mouse(mouse_event) => Ok(handle_mouse_event(mouse_event)),
             _ => Ok(None),
         }

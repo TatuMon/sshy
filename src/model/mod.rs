@@ -48,7 +48,8 @@ impl Model {
             }
             Message::ShowPopup(popup) => self.set_popup(Some(popup)),
             Message::HidePopup => self.set_popup(None),
-            Message::SetSection(section) => self.set_section(section)
+            Message::SetSection(section) => self.set_section(section),
+            _ => {},
         }
     }
 
