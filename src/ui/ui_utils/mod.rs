@@ -1,3 +1,5 @@
+pub mod styles;
+
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     widgets::Paragraph,

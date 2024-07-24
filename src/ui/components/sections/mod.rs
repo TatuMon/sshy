@@ -1,3 +1,5 @@
+pub mod known_hosts_list;
+
 use serde::Serialize;
 
 /// Sections define where the user currently is.
@@ -7,5 +9,5 @@ use serde::Serialize;
 #[derive(Clone, Copy, Default, Serialize)]
 pub enum Section {
     #[default]
-    Home,
+    KnownHostsList,
 }

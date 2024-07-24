@@ -2,12 +2,11 @@ pub mod components;
 pub mod ui_utils;
 
 use color_eyre::eyre::{Context, Result};
-use ratatui::{Frame, widgets::Paragraph};
 use serde::Serialize;
 
 use crate::{model::Model, terminal::SshyTerminal};
 
-use self::{components::popups::{Popup, exit_prompt, debug_model}, components::sections::Section};
+use self::{components::popups::{Popup, exit_prompt, debug_model}, components::sections::{Section, known_hosts_list}};
 
 #[derive(Clone, Copy, Serialize)]
 pub enum Focus {
@@ -28,10 +27,8 @@ impl Default for Focus {
 pub fn draw(terminal: &mut SshyTerminal, model: &Model) -> Result<()> {
     terminal
         .draw(|f| {
+            known_hosts_list::draw(f);
             // We first draw the current section
-            match model.get_section() {
-                Section::Home => draw_home(f),
-            }
             // And then the current popup (if any)
             if let Some(popup) = model.get_popup() {
                 match popup {
@@ -43,8 +40,4 @@ pub fn draw(terminal: &mut SshyTerminal, model: &Model) -> Result<()> {
         .wrap_err("Drawing error")?;
 
     Ok(())
-}
-
-fn draw_home(f: &mut Frame) {
-    f.render_widget(Paragraph::new("Hello world!"), f.size());
 }
