@@ -15,4 +15,4 @@ Features will be released in the following order:
 #### Server features
 
 
-## To know about implementation details, read [here](src/implementation.md)
+## To know about implementation details, read [here](docs/implementation.md)
