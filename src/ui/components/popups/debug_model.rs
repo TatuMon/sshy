@@ -1,6 +1,6 @@
 use ratatui::{widgets::{Block, BorderType, Borders, Paragraph}, Frame};
 
-use crate::{model::Model, ui::components::ui_utils::centered_rect};
+use crate::{model::Model, ui::ui_utils::centered_rect};
 
 pub fn draw_debug_model_popup(f: &mut Frame, model: &Model) {
     let model_json = serde_json::to_string_pretty(model)

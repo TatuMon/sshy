@@ -1,4 +1,5 @@
 pub mod components;
+pub mod ui_utils;
 
 use color_eyre::eyre::{Context, Result};
 use ratatui::{Frame, widgets::Paragraph};
@@ -29,12 +30,12 @@ pub fn draw(terminal: &mut SshyTerminal, model: &Model) -> Result<()> {
         .draw(|f| {
             // We first draw the current section
             match model.get_section() {
-                Section::Home => draw_home(f, model),
+                Section::Home => draw_home(f),
             }
             // And then the current popup (if any)
             if let Some(popup) = model.get_popup() {
                 match popup {
-                    Popup::ExitPrompt => exit_prompt::draw_exit_popup(f, model),
+                    Popup::ExitPrompt => exit_prompt::draw_exit_popup(f),
                     Popup::DebugModel => debug_model::draw_debug_model_popup(f, model),
                 }
             }
@@ -44,6 +45,6 @@ pub fn draw(terminal: &mut SshyTerminal, model: &Model) -> Result<()> {
     Ok(())
 }
 
-fn draw_home(f: &mut Frame, model: &Model) {
+fn draw_home(f: &mut Frame) {
     f.render_widget(Paragraph::new("Hello world!"), f.size());
 }
