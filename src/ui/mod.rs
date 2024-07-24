@@ -1,13 +1,12 @@
-pub mod popups;
-pub mod sections;
+pub mod components;
 
 use color_eyre::eyre::{Context, Result};
-use ratatui::{layout::{Constraint, Direction, Layout, Rect}, Frame, widgets::Paragraph};
+use ratatui::{Frame, widgets::Paragraph};
 use serde::Serialize;
 
 use crate::{model::Model, terminal::SshyTerminal};
 
-use self::{popups::{Popup, draw_exit_popup, draw_debug_model_popup}, sections::Section};
+use self::{components::popups::{Popup, exit_prompt, debug_model}, components::sections::Section};
 
 #[derive(Clone, Copy, Serialize)]
 pub enum Focus {
@@ -21,6 +20,10 @@ impl Default for Focus {
     }
 }
 
+/// Main draw function
+///
+/// It'll internally draw the appropiate sections and popups based on the given
+/// model's state
 pub fn draw(terminal: &mut SshyTerminal, model: &Model) -> Result<()> {
     terminal
         .draw(|f| {
@@ -31,37 +34,14 @@ pub fn draw(terminal: &mut SshyTerminal, model: &Model) -> Result<()> {
             // And then the current popup (if any)
             if let Some(popup) = model.get_popup() {
                 match popup {
-                    Popup::ExitPrompt => draw_exit_popup(f, model),
-                    Popup::DebugModel => {draw_debug_model_popup(f, model);},
+                    Popup::ExitPrompt => exit_prompt::draw_exit_popup(f, model),
+                    Popup::DebugModel => debug_model::draw_debug_model_popup(f, model),
                 }
             }
         })
         .wrap_err("Drawing error")?;
 
     Ok(())
-}
-
-/// helper function to create a centered rect using up certain percentage of the available rect `r`
-fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
-    // Cut the given rectangle into three vertical pieces
-    let popup_layout = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Percentage((100 - percent_y) / 2),
-            Constraint::Percentage(percent_y),
-            Constraint::Percentage((100 - percent_y) / 2),
-        ])
-        .split(r);
-
-    // Then cut the middle vertical piece into three width-wise pieces
-    Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints([
-            Constraint::Percentage((100 - percent_x) / 2),
-            Constraint::Percentage(percent_x),
-            Constraint::Percentage((100 - percent_x) / 2),
-        ])
-        .split(popup_layout[1])[1] // Return the middle chunk
 }
 
 fn draw_home(f: &mut Frame, model: &Model) {

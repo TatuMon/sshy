@@ -1,4 +1,5 @@
-use crate::ui::{popups::Popup, sections::Section};
+use crate::ui::components::{popups::Popup, sections::Section};
+
 
 #[derive(Clone, Copy)]
 pub enum Message {

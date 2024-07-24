@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::{events::messages::Message, ui::{popups::Popup, sections::Section, Focus}};
+use crate::{events::messages::Message, ui::{components::{popups::Popup, sections::Section}, Focus}};
 
 #[derive(Default, Clone, PartialEq, Serialize)]
 pub enum RunningState {

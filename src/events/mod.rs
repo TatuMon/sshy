@@ -7,7 +7,7 @@ use crossterm::event::{self, Event, KeyCode, KeyEvent};
 
 use crate::{
     model::Model,
-    ui::{popups::Popup, Focus},
+    ui::{components::popups::Popup, Focus},
 };
 
 use self::messages::Message;
