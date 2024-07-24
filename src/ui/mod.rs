@@ -31,7 +31,7 @@ pub fn draw(terminal: &mut SshyTerminal, model: &Model) -> Result<()> {
             // And then the current popup (if any)
             if let Some(popup) = model.get_popup() {
                 match popup {
-                    Popup::Exit => draw_exit_popup(f, model),
+                    Popup::ExitPrompt => draw_exit_popup(f, model),
                     Popup::DebugModel => {draw_debug_model_popup(f, model);},
                 }
             }

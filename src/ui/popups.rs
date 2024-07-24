@@ -8,7 +8,8 @@ use super::centered_rect;
 
 #[derive(Clone, Copy, Serialize)]
 pub enum Popup {
-    Exit,
+    ExitPrompt,
+    /// Popup used to debug the model's state
     DebugModel
 }
 

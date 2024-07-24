@@ -9,6 +9,10 @@ pub enum RunningState {
     Done,
 }
 
+/// Struct in charge of handling the application's state
+///
+/// Changes made to this struct MUST be issued using the 'update' method, which
+/// updates the state based on the given Message
 #[derive(Clone, Default, Serialize)]
 pub struct Model {
     running_state: RunningState,
@@ -27,6 +31,7 @@ impl Model {
         self.current_popup
     }
 
+    /// Returns which view is currently the app focusing on
     pub fn get_focus(&self) -> Focus {
         self.current_focus
     }
@@ -35,7 +40,7 @@ impl Model {
         self.running_state == RunningState::Done
     }
 
-    /// Apply changes based on the given message
+    /// Updates the model state based on the given message
     pub fn update(&mut self, message: Message) {
         match message {
             Message::StopApp => {
