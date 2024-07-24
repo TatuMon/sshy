@@ -1,3 +1,3 @@
 pub mod sections;
 pub mod popups;
-pub mod utils;
+pub mod ui_utils;

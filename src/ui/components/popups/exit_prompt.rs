@@ -1,12 +1,14 @@
-use ratatui::{style::{Color, Style}, text::Text, widgets::{Block, BorderType, Borders, Paragraph, Wrap}, Frame};
+use ratatui::{layout::Alignment, style::{Color, Style}, text::{Line, Text}, widgets::{block::Position, Block, BorderType, Borders, Paragraph, Wrap}, Frame};
 
-use crate::{model::Model, ui::components::utils::centered_rect};
+use crate::{model::Model, ui::components::ui_utils::centered_rect_for_paragraph};
 
 
 pub fn draw_exit_popup(f: &mut Frame, model: &Model) {
     // f.render_widget(Clear, f.size()); //this clears the entire screen and anything already drawn
     let popup_block = Block::default()
-        .title("Q to confirm")
+        .title_alignment(Alignment::Center)
+        .title_position(Position::Bottom)
+        .title("q to confirm")
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
         .style(Style::default());
@@ -17,9 +19,8 @@ pub fn draw_exit_popup(f: &mut Frame, model: &Model) {
     );
     // the `trim: false` will stop the text from being cut off when over the edge of the block
     let exit_paragraph = Paragraph::new(exit_text)
-        .block(popup_block)
-        .wrap(Wrap { trim: false });
+        .block(popup_block);
 
-    let area = centered_rect(60, 25, f.size());
+    let area = centered_rect_for_paragraph(&exit_paragraph, 50, 50, f.size());
     f.render_widget(exit_paragraph, area);
 }

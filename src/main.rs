@@ -1,3 +1,4 @@
+pub mod utils;
 pub mod events;
 pub mod model;
 pub mod terminal;
