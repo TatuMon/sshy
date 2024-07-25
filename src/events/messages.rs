@@ -1,7 +1,7 @@
 use crate::ui::components::{popups::Popup, sections::Section};
 
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub enum Message {
     StopApp,
     ShowPopup(Popup),

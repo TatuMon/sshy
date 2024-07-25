@@ -1,20 +1,22 @@
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::Style,
-    widgets::{Block, BorderType, Borders, List, ListDirection, ListState},
+    widgets::{Block, BorderType, Borders, List, ListDirection, ListItem, ListState},
     Frame,
 };
 
-use crate::{ui::ui_utils::styles, utils};
+use crate::ui::ui_utils::styles;
 
-pub fn draw(f: &mut Frame) {
+pub fn draw(f: &mut Frame, items: Vec<ListItem>, list_state: &mut ListState, focused: bool) {
     let block = Block::default()
         .title("Known hosts")
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
         .style(Style::default());
 
-    let items = utils::files::get_known_hosts().unwrap();
+    if focused {
+        block.border_style(styles::focused_border());
+    }
 
     let list = List::default()
         .items(items)
@@ -22,10 +24,7 @@ pub fn draw(f: &mut Frame) {
         .highlight_style(styles::highlighted_item())
         .block(block);
 
-    let mut list_state = ListState::default();
-
-    let area = get_area(f.size());
-    f.render_stateful_widget(list, area, &mut list_state);
+    f.render_stateful_widget(list, get_area(f.size()), list_state);
 }
 
 fn get_area(frame_rect: Rect) -> Rect {

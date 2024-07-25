@@ -1,6 +1,10 @@
+pub mod sections_state;
+
 use serde::Serialize;
 
-use crate::{events::messages::Message, ui::{components::{popups::Popup, sections::Section}, Focus}};
+use crate::{events::messages::Message, ui::{components::popups::Popup, Focus}};
+
+use self::sections_state::SectionsState;
 
 #[derive(Default, Clone, PartialEq, Serialize)]
 pub enum RunningState {
@@ -17,16 +21,12 @@ pub enum RunningState {
 pub struct Model {
     running_state: RunningState,
     current_popup: Option<Popup>,
-    current_section: Section,
     current_focus: Focus,
-    previous_section: Section,
+    previous_focus: Focus,
+    sections_state: SectionsState
 }
 
 impl Model {
-    pub fn get_section(&self) -> Section {
-        self.current_section
-    }
-
     pub fn get_popup(&self) -> Option<Popup> {
         self.current_popup
     }
@@ -48,7 +48,6 @@ impl Model {
             }
             Message::ShowPopup(popup) => self.set_popup(Some(popup)),
             Message::HidePopup => self.set_popup(None),
-            Message::SetSection(section) => self.set_section(section),
             _ => {},
         }
     }
@@ -58,19 +57,14 @@ impl Model {
         self.current_popup.is_some()
     }
 
-    fn set_section(&mut self, section: Section) {
-        self.previous_section = self.current_section;
-        self.current_section = section;
-        self.current_focus = Focus::Section(section)
-    }
-
     /// Setting a popup should also set the current section
     fn set_popup(&mut self, popup: Option<Popup>) {
         self.current_popup = popup;
         if let Some(popup) = popup {
+            self.previous_focus = self.current_focus;
             self.current_focus = Focus::Popup(popup);
         } else {
-            self.current_focus = Focus::Section(self.current_section);
+            self.current_focus = self.previous_focus;
         }
     }
 }

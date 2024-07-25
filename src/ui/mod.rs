@@ -8,7 +8,7 @@ use crate::{model::Model, terminal::SshyTerminal};
 
 use self::components::{popups::{debug_model, exit_prompt, Popup}, sections::{known_hosts_list, public_keys_list, Section}};
 
-#[derive(Clone, Copy, Serialize)]
+#[derive(Clone, Serialize)]
 pub enum Focus {
     Popup(Popup),
     Section(Section),
