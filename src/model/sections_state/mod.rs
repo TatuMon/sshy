@@ -9,6 +9,8 @@ use self::{
 pub mod known_hosts_list_state;
 pub mod public_keys_list_state;
 
+const SECTIONS_ORDER: [Section; 2] = [Section::KnownHostsList, Section::PublicKeysList];
+
 #[derive(Clone, Default, Serialize)]
 pub struct SectionsStates {
     known_hosts_list_state: KnownHostsListState,
@@ -16,10 +18,52 @@ pub struct SectionsStates {
 }
 
 impl SectionsStates {
+    /// Moves the focus to the next section in the order
+    pub fn next_section(&mut self) {
+        for (idx, section) in SECTIONS_ORDER.iter().enumerate() {
+            if self.has_focus_on(section.to_owned()) {
+                // Using unwrap and direct array access because SECTIONS_ORDER is constant
+                if section == SECTIONS_ORDER.last().unwrap() {
+                    return;
+                } else {
+                    self.set_focus(SECTIONS_ORDER[idx+1])
+                }
+            }
+        }
+    }
+
+    /// Moves the focus to the previous section in the order
+    /// Or the first one if already in last one
+    pub fn prev_section(&mut self) {
+        for (idx, section) in SECTIONS_ORDER.iter().enumerate() {
+            if self.has_focus_on(section.to_owned()) {
+                // Using unwrap and direct array access because SECTIONS_ORDER is constant
+                if section == SECTIONS_ORDER.first().unwrap() {
+                    return;
+                } else {
+                    self.set_focus(SECTIONS_ORDER[idx-1])
+                }
+            }
+        }
+    }
+
     pub fn set_focus(&mut self, section: Section) {
         match section {
-            Section::KnownHostsList => self.known_hosts_list_state.focus(),
-            Section::PublicKeysList => self.public_keys_list_state.focus(),
+            Section::KnownHostsList => {
+                self.public_keys_list_state.unfocus();
+                self.known_hosts_list_state.focus();
+            },
+            Section::PublicKeysList => {
+                self.known_hosts_list_state.unfocus();
+                self.public_keys_list_state.focus();
+            }
+        }
+    }
+
+    pub fn has_focus_on(&self, section: Section) -> bool {
+        match section {
+            Section::KnownHostsList => self.known_hosts_list_state.has_focus(),
+            Section::PublicKeysList => self.public_keys_list_state.has_focus(),
         }
     }
 

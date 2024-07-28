@@ -7,7 +7,7 @@ use serde::Serialize;
 ///
 /// These are needed so we can have keybindings do different things depending on
 /// the current active section
-#[derive(Clone, Serialize, Default)]
+#[derive(Clone, Serialize, Default, PartialEq, Copy)]
 pub enum Section {
     #[default]
     KnownHostsList,

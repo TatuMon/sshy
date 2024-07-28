@@ -7,5 +7,7 @@ pub enum Message {
     ShowPopup(Popup),
     HidePopup,
     SetSection(Section),
-    Draw
+    Draw,
+    MoveToNextSection,
+    MoveToPrevSection
 }

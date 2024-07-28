@@ -59,6 +59,14 @@ fn handle_key_event(event: KeyEvent, model: &Model) -> Option<Message> {
             }
         },
         KeyCode::Char('p') => Some(Message::ShowPopup(Popup::DebugModel)),
+        KeyCode::Right => match model.on_popup() {
+            true => None,
+            false => Some(Message::MoveToNextSection)
+        },
+        KeyCode::Left => match model.on_popup() {
+            true => None,
+            false => Some(Message::MoveToPrevSection)
+        },
         KeyCode::Esc => match model.on_popup() {
             true => Some(Message::HidePopup),
             false => None,
