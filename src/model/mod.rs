@@ -4,7 +4,7 @@ use serde::Serialize;
 
 use crate::{events::messages::Message, ui::{components::popups::Popup, Focus}};
 
-use self::sections_state::SectionsState;
+use self::sections_state::SectionsStates;
 
 #[derive(Default, Clone, PartialEq, Serialize)]
 pub enum RunningState {
@@ -23,7 +23,7 @@ pub struct Model {
     current_popup: Option<Popup>,
     current_focus: Focus,
     previous_focus: Focus,
-    sections_state: SectionsState
+    sections_states: SectionsStates
 }
 
 impl Model {
@@ -33,7 +33,7 @@ impl Model {
 
     /// Returns which view is currently the app focusing on
     pub fn get_focus(&self) -> Focus {
-        self.current_focus
+        self.current_focus.clone()
     }
 
     pub fn is_app_done(&self) -> bool {
@@ -57,14 +57,18 @@ impl Model {
         self.current_popup.is_some()
     }
 
+    pub fn get_sections_state(&self) -> &SectionsStates {
+        &self.sections_states
+    }
+
     /// Setting a popup should also set the current section
     fn set_popup(&mut self, popup: Option<Popup>) {
         self.current_popup = popup;
         if let Some(popup) = popup {
-            self.previous_focus = self.current_focus;
+            self.previous_focus = self.current_focus.clone();
             self.current_focus = Focus::Popup(popup);
         } else {
-            self.current_focus = self.previous_focus;
+            self.current_focus = self.previous_focus.clone();
         }
     }
 }

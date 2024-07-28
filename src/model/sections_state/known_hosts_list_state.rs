@@ -1,12 +1,13 @@
-use ratatui::widgets::ListState;
 use serde::Serialize;
 
 use crate::utils;
 
-#[derive(Clone, Default)]
+type ListItems = Vec<String>;
+
+#[derive(Clone)]
 pub struct KnownHostsListState {
-    items: Vec<String>,
-    list_state: ListState,
+    items: ListItems,
+    selected_item_idx: Option<usize>,
     has_focus: bool
 }
 
@@ -26,6 +27,28 @@ impl KnownHostsListState {
 
     pub fn has_focus(&self) -> bool {
         self.has_focus
+    }
+
+    pub fn get_items(&self) -> ListItems {
+        self.items.clone()
+    }
+
+    pub fn get_selected_item_idx(&self) -> Option<usize> {
+        self.selected_item_idx
+    }
+}
+
+impl Default for KnownHostsListState {
+    fn default() -> Self {
+        let mut state = Self{
+            items: vec!(),
+            selected_item_idx: None,
+            has_focus: true
+        };
+
+        state.load_known_hosts();
+
+        state
     }
 }
 

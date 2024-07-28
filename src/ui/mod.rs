@@ -27,8 +27,8 @@ impl Default for Focus {
 pub fn draw(terminal: &mut SshyTerminal, model: &Model) -> Result<()> {
     terminal
         .draw(|f| {
-            known_hosts_list::draw(f);
-            public_keys_list::draw(f);
+            known_hosts_list::draw(f, model.get_sections_state().get_known_hosts_list_state());
+            public_keys_list::draw(f, model.get_sections_state().get_public_keys_list_state());
             // We first draw the current section
             // And then the current popup (if any)
             if let Some(popup) = model.get_popup() {
