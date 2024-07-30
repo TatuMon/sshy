@@ -9,5 +9,7 @@ pub enum Message {
     SetSection(Section),
     Draw,
     MoveToNextSection,
-    MoveToPrevSection
+    MoveToPrevSection,
+    SelNextItem,
+    SelPrevItem
 }

@@ -74,4 +74,12 @@ impl SectionsStates {
     pub fn get_public_keys_list_state(&self) -> &PublicKeysListState {
         &self.public_keys_list_state
     }
+
+    pub fn get_known_hosts_list_state_mut(&mut self) -> &mut KnownHostsListState {
+        &mut self.known_hosts_list_state
+    }
+
+    pub fn get_public_keys_list_state_mut(&mut self) -> &mut PublicKeysListState {
+        &mut self.public_keys_list_state
+    }
 }

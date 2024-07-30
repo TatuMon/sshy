@@ -2,7 +2,13 @@ pub mod sections_state;
 
 use serde::Serialize;
 
-use crate::{events::messages::Message, ui::{components::popups::Popup, Focus}};
+use crate::{
+    events::messages::Message,
+    ui::{
+        components::{popups::Popup, sections::Section},
+        Focus,
+    },
+};
 
 use self::sections_state::SectionsStates;
 
@@ -23,7 +29,7 @@ pub struct Model {
     current_popup: Option<Popup>,
     current_focus: Focus,
     previous_focus: Focus,
-    sections_states: SectionsStates
+    sections_states: SectionsStates,
 }
 
 impl Model {
@@ -50,7 +56,35 @@ impl Model {
             Message::HidePopup => self.set_popup(None),
             Message::MoveToNextSection => self.sections_states.next_section(),
             Message::MoveToPrevSection => self.sections_states.prev_section(),
-            _ => {},
+            Message::SelNextItem => {
+                if let Focus::Section(section) = self.current_focus {
+                    match section {
+                        Section::KnownHostsList => self
+                            .sections_states
+                            .get_known_hosts_list_state_mut()
+                            .next_item(),
+                        Section::PublicKeysList => self
+                            .sections_states
+                            .get_public_keys_list_state_mut()
+                            .next_item(),
+                    }
+                }
+            },
+            Message::SelPrevItem => {
+                if let Focus::Section(section) = self.current_focus {
+                    match section {
+                        Section::KnownHostsList => self
+                            .sections_states
+                            .get_known_hosts_list_state_mut()
+                            .prev_item(),
+                        Section::PublicKeysList => self
+                            .sections_states
+                            .get_public_keys_list_state_mut()
+                            .prev_item(),
+                    }
+                }
+            }
+            _ => {}
         }
     }
 

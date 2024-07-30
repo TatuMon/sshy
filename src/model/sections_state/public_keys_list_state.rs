@@ -13,16 +13,20 @@ pub struct PublicKeysListState {
 
 impl PublicKeysListState {
     pub fn load_public_keys(&mut self) {
-        let known_hosts = utils::files::get_public_keys_names().unwrap_or_default();
-        self.items = known_hosts;
+        let public_keys = utils::files::get_public_keys_names().unwrap_or_default();
+        self.items = public_keys;
     }
 
     pub fn focus(&mut self) {
         self.has_focus = true;
+        if !self.items.is_empty() {
+            self.selected_item_idx = Some(0);
+        }
     }
 
     pub fn unfocus(&mut self) {
         self.has_focus = false;
+        self.selected_item_idx = None;
     }
 
     pub fn has_focus(&self) -> bool {
@@ -35,6 +39,28 @@ impl PublicKeysListState {
 
     pub fn get_selected_item_idx(&self) -> Option<usize> {
         self.selected_item_idx
+    }
+
+    pub fn next_item(&mut self) {
+        match self.selected_item_idx {
+            None => if !self.items.is_empty() {
+                self.selected_item_idx = Some(0)
+            },
+            Some(idx) => if idx < self.items.len()-1 {
+                self.selected_item_idx = Some(idx + 1)
+            }
+        }
+    }
+
+    pub fn prev_item(&mut self) {
+        match self.selected_item_idx {
+            None => if !self.items.is_empty() {
+                self.selected_item_idx = Some(0)
+            },
+            Some(idx) => if idx > 0 {
+                self.selected_item_idx = Some(idx - 1)
+            }
+        }
     }
 }
 
