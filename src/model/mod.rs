@@ -83,7 +83,7 @@ impl Model {
                             .prev_item(),
                     }
                 }
-            }
+            },
             _ => {}
         }
     }

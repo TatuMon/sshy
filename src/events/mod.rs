@@ -7,7 +7,7 @@ use crossterm::event::{self, Event, KeyCode, KeyEvent};
 
 use crate::{
     model::Model,
-    ui::{components::popups::Popup, Focus},
+    ui::{components::{popups::Popup, sections::Section}, Focus},
 };
 
 use self::messages::Message;
@@ -59,6 +59,13 @@ fn handle_key_event(event: KeyEvent, model: &Model) -> Option<Message> {
             }
         },
         KeyCode::Char('p') => Some(Message::ShowPopup(Popup::DebugModel)),
+        KeyCode::Char('n') => match model.get_focus() {
+            Focus::Section(section) => match section {
+                Section::PublicKeysList => Some(Message::ShowPopup(Popup::AddPubKey)),
+                _ => None
+            }
+            _ => None
+        }
         KeyCode::Right => match model.on_popup() {
             true => None,
             false => Some(Message::MoveToNextSection)

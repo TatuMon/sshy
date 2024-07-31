@@ -6,7 +6,7 @@ use serde::Serialize;
 
 use crate::{model::Model, terminal::SshyTerminal};
 
-use self::components::{popups::{debug_model, exit_prompt, Popup}, sections::{known_hosts_list, public_keys_list, Section}};
+use self::components::{popups::{debug_model, exit_prompt, Popup, add_pub_key}, sections::{known_hosts_list, public_keys_list, Section}};
 
 #[derive(Clone, Serialize)]
 pub enum Focus {
@@ -27,14 +27,15 @@ impl Default for Focus {
 pub fn draw(terminal: &mut SshyTerminal, model: &Model) -> Result<()> {
     terminal
         .draw(|f| {
+            // We first draw the sections
             known_hosts_list::draw(f, model.get_sections_state().get_known_hosts_list_state());
             public_keys_list::draw(f, model.get_sections_state().get_public_keys_list_state());
-            // We first draw the current section
             // And then the current popup (if any)
             if let Some(popup) = model.get_popup() {
                 match popup {
                     Popup::ExitPrompt => exit_prompt::draw_exit_popup(f),
                     Popup::DebugModel => debug_model::draw_debug_model_popup(f, model),
+                    Popup::AddPubKey => add_pub_key::draw_add_pub_key_popup(f, model)
                 }
             }
         })
