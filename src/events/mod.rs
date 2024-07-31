@@ -7,7 +7,10 @@ use crossterm::event::{self, Event, KeyCode, KeyEvent};
 
 use crate::{
     model::Model,
-    ui::{components::{popups::Popup, sections::Section}, Focus},
+    ui::{
+        components::{popups::Popup, sections::Section},
+        Focus,
+    },
 };
 
 use self::messages::Message;
@@ -55,32 +58,32 @@ fn handle_key_event(event: KeyEvent, model: &Model) -> Option<Message> {
             Focus::Section(_) => Some(Message::ShowPopup(Popup::ExitPrompt)),
             Focus::Popup(popup) => match popup {
                 Popup::ExitPrompt => Some(Message::StopApp),
-                _ => None
-            }
+                _ => Some(Message::HidePopup),
+            },
         },
         KeyCode::Char('p') => Some(Message::ShowPopup(Popup::DebugModel)),
-        KeyCode::Char('n') => match model.get_focus() {
-            Focus::Section(section) => match section {
-                Section::PublicKeysList => Some(Message::ShowPopup(Popup::AddPubKey)),
-                _ => None
+        KeyCode::Char('n') => {
+            if let Focus::Section(Section::PublicKeysList) = model.get_focus() {
+                Some(Message::ShowPopup(Popup::AddPubKey))
+            } else {
+                None
             }
-            _ => None
         }
         KeyCode::Right => match model.on_popup() {
             true => None,
-            false => Some(Message::MoveToNextSection)
+            false => Some(Message::MoveToNextSection),
         },
         KeyCode::Left => match model.on_popup() {
             true => None,
-            false => Some(Message::MoveToPrevSection)
+            false => Some(Message::MoveToPrevSection),
         },
         KeyCode::Up => match model.on_popup() {
             true => None,
-            false => Some(Message::SelPrevItem)
+            false => Some(Message::SelPrevItem),
         },
         KeyCode::Down => match model.on_popup() {
             true => None,
-            false => Some(Message::SelNextItem)
+            false => Some(Message::SelNextItem),
         },
         KeyCode::Esc => match model.on_popup() {
             true => Some(Message::HidePopup),
