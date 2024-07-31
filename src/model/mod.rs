@@ -54,8 +54,8 @@ impl Model {
             }
             Message::ShowPopup(popup) => self.set_popup(Some(popup)),
             Message::HidePopup => self.set_popup(None),
-            Message::MoveToNextSection => self.sections_states.next_section(),
-            Message::MoveToPrevSection => self.sections_states.prev_section(),
+            Message::MoveToNextSection => self.next_section(),
+            Message::MoveToPrevSection => self.prev_section(),
             Message::SelNextItem => {
                 if let Focus::Section(section) = self.current_focus {
                     match section {
@@ -106,5 +106,15 @@ impl Model {
         } else {
             self.current_focus = self.previous_focus.clone();
         }
+    }
+
+    fn next_section(&mut self) {
+        let next_section = self.sections_states.next_section();
+        self.current_focus = Focus::Section(next_section);
+    }
+
+    fn prev_section(&mut self) {
+        let prev_section = self.sections_states.prev_section();
+        self.current_focus = Focus::Section(prev_section);
     }
 }
