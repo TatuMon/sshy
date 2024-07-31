@@ -1,4 +1,4 @@
-use ratatui::{widgets::{Block, BorderType, Borders, Paragraph}, Frame};
+use ratatui::{widgets::{Clear, Block, BorderType, Borders, Paragraph}, Frame};
 
 use crate::{model::Model, ui::ui_utils::centered_rect};
 
@@ -7,7 +7,7 @@ pub fn draw_add_pub_key_popup(f: &mut Frame, model: &Model) {
         .unwrap_or(String::from("failed to serialize model for debugging"));
 
     let block = Block::default()
-        .title("Model state")
+        .title("New public key")
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded);
 
@@ -15,5 +15,7 @@ pub fn draw_add_pub_key_popup(f: &mut Frame, model: &Model) {
         .block(block);
 
     let area = centered_rect(50, 50, f.size());
-    f.render_widget(paragraph, area)
+
+    f.render_widget(Clear, area);
+    f.render_widget(paragraph, area);
 }

@@ -1,4 +1,4 @@
-use ratatui::{widgets::{Block, BorderType, Borders, Paragraph}, Frame};
+use ratatui::{widgets::{Block, BorderType, Borders, Paragraph, Clear}, Frame};
 
 use crate::{model::Model, ui::ui_utils::centered_rect};
 
@@ -15,5 +15,7 @@ pub fn draw_debug_model_popup(f: &mut Frame, model: &Model) {
         .block(block);
 
     let area = centered_rect(50, 50, f.size());
-    f.render_widget(paragraph, area)
+
+    f.render_widget(Clear, area);
+    f.render_widget(paragraph, area);
 }

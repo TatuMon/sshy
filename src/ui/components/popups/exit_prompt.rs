@@ -2,7 +2,7 @@ use ratatui::{
     layout::Alignment,
     style::{Color, Style},
     text::Text,
-    widgets::{block::Position, Block, BorderType, Borders, Paragraph},
+    widgets::{block::Position, Block, BorderType, Borders, Paragraph, Clear},
     Frame,
 };
 
@@ -15,8 +15,7 @@ pub fn draw_exit_popup(f: &mut Frame) {
         .title_position(Position::Bottom)
         .title("q to confirm")
         .borders(Borders::ALL)
-        .border_type(BorderType::Rounded)
-        .style(Style::default());
+        .border_type(BorderType::Rounded);
 
     let exit_text = Text::styled(
         "Are you sure you want to exit the application?",
@@ -26,5 +25,7 @@ pub fn draw_exit_popup(f: &mut Frame) {
     let exit_paragraph = Paragraph::new(exit_text).block(popup_block);
 
     let area = centered_rect_for_paragraph(&exit_paragraph, 50, 50, f.size());
+
+    f.render_widget(Clear, area);
     f.render_widget(exit_paragraph, area);
 }
