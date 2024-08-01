@@ -79,15 +79,25 @@ fn handle_key_event(event: KeyEvent, model: &Model) -> Option<Message> {
         },
         KeyCode::Up => match model.on_popup() {
             true => None,
-            false => Some(Message::SelPrevItem),
+            false => Some(Message::SelPrevListItem),
         },
         KeyCode::Down => match model.on_popup() {
             true => None,
-            false => Some(Message::SelNextItem),
+            false => Some(Message::SelNextListItem),
         },
         KeyCode::Esc => match model.on_popup() {
             true => Some(Message::HidePopup),
             false => None,
+        },
+        KeyCode::Tab => if let Focus::Popup(Popup::AddPubKey) = model.get_focus() {
+            Some(Message::SelNextPopupItem)
+        } else {
+            None
+        },
+        KeyCode::BackTab => if let Focus::Popup(Popup::AddPubKey) = model.get_focus() {
+            Some(Message::SelPrevPopupItem)
+        } else {
+            None
         },
         _ => None,
     }

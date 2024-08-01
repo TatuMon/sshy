@@ -10,6 +10,8 @@ pub enum Message {
     Draw,
     MoveToNextSection,
     MoveToPrevSection,
-    SelNextItem,
-    SelPrevItem
+    SelNextListItem,
+    SelPrevListItem,
+    SelNextPopupItem,
+    SelPrevPopupItem
 }

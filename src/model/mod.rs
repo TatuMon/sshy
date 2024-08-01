@@ -56,7 +56,7 @@ impl Model {
             Message::HidePopup => self.set_popup(None),
             Message::MoveToNextSection => self.next_section(),
             Message::MoveToPrevSection => self.prev_section(),
-            Message::SelNextItem => {
+            Message::SelNextListItem => {
                 if let Focus::Section(section) = self.current_focus {
                     match section {
                         Section::KnownHostsList => self
@@ -69,8 +69,8 @@ impl Model {
                             .next_item(),
                     }
                 }
-            },
-            Message::SelPrevItem => {
+            }
+            Message::SelPrevListItem => {
                 if let Focus::Section(section) = self.current_focus {
                     match section {
                         Section::KnownHostsList => self
@@ -83,7 +83,37 @@ impl Model {
                             .prev_item(),
                     }
                 }
-            },
+            }
+            Message::SelNextPopupItem => {
+                if let Focus::Popup(popup) = self.current_focus {
+                    match popup {
+                        Popup::AddPubKey => {
+                            let new_key_state = self
+                                .sections_states
+                                .get_public_keys_list_state_mut()
+                                .get_new_key_state_mut();
+                            new_key_state.next_focus();
+                        }
+                        Popup::ExitPrompt => {}
+                        _ => {}
+                    }
+                }
+            }
+            Message::SelPrevPopupItem => {
+                if let Focus::Popup(popup) = self.current_focus {
+                    match popup {
+                        Popup::AddPubKey => {
+                            let new_key_state = self
+                                .sections_states
+                                .get_public_keys_list_state_mut()
+                                .get_new_key_state_mut();
+                            new_key_state.prev_focus();
+                        }
+                        Popup::ExitPrompt => {}
+                        _ => {}
+                    }
+                }
+            }
             _ => {}
         }
     }

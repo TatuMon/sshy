@@ -78,15 +78,15 @@ impl NewPublicKeyState {
 
     pub fn next_focus(&mut self) {
         match self.current_focus {
+            NewPublicKeyFocus::Comment => self.current_focus = NewPublicKeyFocus::Name,
             NewPublicKeyFocus::Name => self.current_focus = NewPublicKeyFocus::Comment,
-            NewPublicKeyFocus::Comment => {}
         }
     }
 
     pub fn prev_focus(&mut self) {
         match self.current_focus {
             NewPublicKeyFocus::Comment => self.current_focus = NewPublicKeyFocus::Name,
-            NewPublicKeyFocus::Name => {}
+            NewPublicKeyFocus::Name => self.current_focus = NewPublicKeyFocus::Comment
         }
     }
 }
@@ -152,6 +152,10 @@ impl PublicKeysListState {
     
     pub fn get_new_key_state(&self) -> &NewPublicKeyState {
         &self.new_key_state
+    }
+
+    pub fn get_new_key_state_mut(&mut self) -> &mut NewPublicKeyState {
+        &mut self.new_key_state
     }
 }
 
