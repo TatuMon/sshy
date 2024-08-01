@@ -3,7 +3,7 @@ pub mod messages;
 use std::time::Duration;
 
 use color_eyre::eyre::{Context, Result};
-use crossterm::event::{self, Event, KeyCode, KeyEvent};
+use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers, ModifierKeyCode};
 
 use crate::{
     model::Model,
@@ -52,53 +52,58 @@ fn poll_event() -> Result<Option<Event>> {
 /// # NOTE
 /// When this function starts to get too complex, try to give each key code a
 /// separate function
-fn handle_key_event(event: KeyEvent, model: &Model) -> Option<Message> {
+///
+/// # TODO
+/// Before matching the event's code, the function should first match the model's
+/// focus
+///
+/// Matching the code first, makes it impossible to write to an input
+fn handle_key_event(key: KeyEvent, model: &Model) -> Option<Message> {
+    match model.get_focus() {
+        Focus::Section(section) => handle_section_key_event(section, key),
+        Focus::Popup(popup) => handle_popup_key_event(popup, key),
+    }
+}
+
+fn handle_section_key_event(section: Section, event: KeyEvent) -> Option<Message> {
     match event.code {
-        KeyCode::Char('q') => match model.get_focus() {
-            Focus::Section(_) => Some(Message::ShowPopup(Popup::ExitPrompt)),
-            Focus::Popup(popup) => match popup {
-                Popup::ExitPrompt => Some(Message::StopApp),
-                _ => Some(Message::HidePopup),
-            },
-        },
+        KeyCode::Char('q') => Some(Message::ShowPopup(Popup::ExitPrompt)),
         KeyCode::Char('p') => Some(Message::ShowPopup(Popup::DebugModel)),
+        KeyCode::Right => Some(Message::MoveToNextSection),
+        KeyCode::Left => Some(Message::MoveToPrevSection),
+        KeyCode::Up => Some(Message::SelPrevListItem),
+        KeyCode::Down => Some(Message::SelNextListItem),
         KeyCode::Char('n') => {
-            if let Focus::Section(Section::PublicKeysList) = model.get_focus() {
+            if let Section::PublicKeysList = section {
                 Some(Message::ShowPopup(Popup::AddPubKey))
             } else {
                 None
             }
         }
-        KeyCode::Right => match model.on_popup() {
-            true => None,
-            false => Some(Message::MoveToNextSection),
+        _ => None,
+    }
+}
+
+fn handle_popup_key_event(popup: Popup, key: KeyEvent) -> Option<Message> {
+    match key.code {
+        KeyCode::Char(ch) => match popup {
+            Popup::ExitPrompt => {
+                if ch == 'q' {
+                    Some(Message::StopApp)
+                } else {
+                    None
+                }
+            }
+            Popup::AddPubKey if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                Some(Message::PopWord)
+            }
+            Popup::AddPubKey => Some(Message::WriteChar(ch)),
+            _ => None,
         },
-        KeyCode::Left => match model.on_popup() {
-            true => None,
-            false => Some(Message::MoveToPrevSection),
-        },
-        KeyCode::Up => match model.on_popup() {
-            true => None,
-            false => Some(Message::SelPrevListItem),
-        },
-        KeyCode::Down => match model.on_popup() {
-            true => None,
-            false => Some(Message::SelNextListItem),
-        },
-        KeyCode::Esc => match model.on_popup() {
-            true => Some(Message::HidePopup),
-            false => None,
-        },
-        KeyCode::Tab => if let Focus::Popup(Popup::AddPubKey) = model.get_focus() {
-            Some(Message::SelNextPopupItem)
-        } else {
-            None
-        },
-        KeyCode::BackTab => if let Focus::Popup(Popup::AddPubKey) = model.get_focus() {
-            Some(Message::SelPrevPopupItem)
-        } else {
-            None
-        },
+        KeyCode::Backspace => Some(Message::PopChar),
+        KeyCode::Esc => Some(Message::HidePopup),
+        KeyCode::Tab => Some(Message::SelNextPopupItem),
+        KeyCode::BackTab => Some(Message::SelPrevPopupItem),
         _ => None,
     }
 }

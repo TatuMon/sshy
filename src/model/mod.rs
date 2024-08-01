@@ -1,5 +1,6 @@
 pub mod sections_state;
 
+use sections_state::public_keys_list_state::NewPublicKeyFocus;
 use serde::Serialize;
 
 use crate::{
@@ -113,7 +114,64 @@ impl Model {
                         _ => {}
                     }
                 }
-            }
+            },
+            Message::WriteChar(ch) => {
+                if let Focus::Popup(popup) = self.current_focus {
+                    match popup {
+                        Popup::AddPubKey => {
+                            let new_key_state = self
+                                .sections_states
+                                .get_public_keys_list_state_mut()
+                                .get_new_key_state_mut();
+
+                            match new_key_state.get_focus() {
+                                NewPublicKeyFocus::Name => new_key_state.write_name(ch),
+                                NewPublicKeyFocus::Comment => new_key_state.write_comment(ch)
+                            }
+                        }
+                        Popup::ExitPrompt => {}
+                        _ => {}
+                    }
+                }
+            },
+            Message::PopChar => {
+                if let Focus::Popup(popup) = self.current_focus {
+                    match popup {
+                        Popup::AddPubKey => {
+                            let new_key_state = self
+                                .sections_states
+                                .get_public_keys_list_state_mut()
+                                .get_new_key_state_mut();
+
+                            match new_key_state.get_focus() {
+                                NewPublicKeyFocus::Name => new_key_state.del_name(),
+                                NewPublicKeyFocus::Comment => new_key_state.del_comment()
+                            }
+                        }
+                        Popup::ExitPrompt => {}
+                        _ => {}
+                    }
+                }
+            },
+            Message::PopWord => {
+                if let Focus::Popup(popup) = self.current_focus {
+                    match popup {
+                        Popup::AddPubKey => {
+                            let new_key_state = self
+                                .sections_states
+                                .get_public_keys_list_state_mut()
+                                .get_new_key_state_mut();
+
+                            match new_key_state.get_focus() {
+                                NewPublicKeyFocus::Name => new_key_state.del_name_word(),
+                                NewPublicKeyFocus::Comment => new_key_state.del_comment_word()
+                            }
+                        }
+                        Popup::ExitPrompt => {}
+                        _ => {}
+                    }
+                }
+            },
             _ => {}
         }
     }

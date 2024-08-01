@@ -13,5 +13,8 @@ pub enum Message {
     SelNextListItem,
     SelPrevListItem,
     SelNextPopupItem,
-    SelPrevPopupItem
+    SelPrevPopupItem,
+    WriteChar(char),
+    PopChar,
+    PopWord
 }

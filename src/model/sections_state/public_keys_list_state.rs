@@ -72,6 +72,10 @@ impl NewPublicKeyState {
         self.comment = strings::del_word(self.comment.to_owned());
     }
 
+    pub fn get_focus(&self) -> NewPublicKeyFocus {
+        self.current_focus
+    }
+
     pub fn has_focus_on(&self, possible_focus: NewPublicKeyFocus) -> bool {
         self.current_focus == possible_focus
     }
