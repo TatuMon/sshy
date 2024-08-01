@@ -1,14 +1,101 @@
+
 use serde::Serialize;
 
-use crate::utils;
+use crate::utils::{self, strings};
 
 type ListItems = Vec<String>;
 
+#[derive(Clone, Copy, Default)]
+pub enum PublicKeyType {
+    #[default]
+    ED25519
+}
+
+impl From<PublicKeyType> for &str {
+    fn from(value: PublicKeyType) -> Self {
+        match value {
+            PublicKeyType::ED25519 => "ed25519"
+        }
+    }
+}
+
+#[derive(Clone, Copy, Default, PartialEq)]
+pub enum NewPublicKeyFocus {
+    #[default]
+    Name,
+    Comment,
+    // KeyType For now, only ED25519 is available
+}
+
+#[derive(Clone, Default)]
+pub struct NewPublicKeyState {
+    name: String,
+    key_type: PublicKeyType,
+    comment: String,
+    current_focus: NewPublicKeyFocus
+}
+
+impl NewPublicKeyState {
+    pub fn get_name(&self) -> &str {
+        self.name.as_str()
+    }
+
+    pub fn get_type(&self) -> PublicKeyType {
+        self.key_type
+    }
+
+    pub fn get_comment(&self) -> &str {
+        self.comment.as_str()
+    }
+
+    pub fn write_name(&mut self, ch: char) {
+        self.name.push(ch);
+    }
+
+    pub fn del_name(&mut self) {
+        self.name.pop();
+    }
+
+    pub fn del_name_word(&mut self) {
+        self.name = strings::del_word(self.name.to_owned());
+    }
+
+    pub fn write_comment(&mut self, ch: char) {
+        self.comment.push(ch);
+    }
+
+    pub fn del_comment(&mut self) {
+        self.comment.pop();
+    }
+
+    pub fn del_comment_word(&mut self) {
+        self.comment = strings::del_word(self.comment.to_owned());
+    }
+
+    pub fn has_focus_on(&self, possible_focus: NewPublicKeyFocus) -> bool {
+        self.current_focus == possible_focus
+    }
+
+    pub fn next_focus(&mut self) {
+        match self.current_focus {
+            NewPublicKeyFocus::Name => self.current_focus = NewPublicKeyFocus::Comment,
+            NewPublicKeyFocus::Comment => {}
+        }
+    }
+
+    pub fn prev_focus(&mut self) {
+        match self.current_focus {
+            NewPublicKeyFocus::Comment => self.current_focus = NewPublicKeyFocus::Name,
+            NewPublicKeyFocus::Name => {}
+        }
+    }
+}
+
 #[derive(Clone)]
-pub struct PublicKeysListState {
-    items: ListItems,
+pub struct PublicKeysListState { items: ListItems,
     selected_item_idx: Option<usize>,
-    has_focus: bool
+    has_focus: bool,
+    new_key_state: NewPublicKeyState
 }
 
 impl PublicKeysListState {
@@ -62,6 +149,10 @@ impl PublicKeysListState {
             }
         }
     }
+    
+    pub fn get_new_key_state(&self) -> &NewPublicKeyState {
+        &self.new_key_state
+    }
 }
 
 impl Default for PublicKeysListState {
@@ -69,7 +160,8 @@ impl Default for PublicKeysListState {
         let mut state = Self{
             items: vec!(),
             selected_item_idx: None,
-            has_focus: false
+            has_focus: false,
+            new_key_state: NewPublicKeyState::default()
         };
 
         state.load_public_keys();

@@ -1,4 +1,5 @@
 pub mod styles;
+pub mod text_input;
 
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
