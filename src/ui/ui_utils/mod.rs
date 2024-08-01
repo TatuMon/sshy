@@ -1,5 +1,6 @@
 pub mod styles;
 pub mod text_input;
+pub mod popups;
 
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
@@ -29,6 +30,28 @@ pub fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
             Constraint::Percentage((100 - percent_x) / 2),
         ])
         .split(popup_layout[1])[1] // Return the middle chunk
+}
+
+pub fn centered_rect_px(width_px: u16, height_px: u16, r: Rect) -> Rect {
+    // Cut the given rectangle into three vertical pieces
+    let popup_layout = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Length((r.height - height_px) / 2),
+            Constraint::Length(height_px),
+            Constraint::Length((r.height - height_px) / 2),
+        ])
+        .split(r)[1];
+
+    // Then cut the middle vertical piece into three width-wise pieces
+    Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Length((r.width - width_px) / 2),
+            Constraint::Length(width_px),
+            Constraint::Length((r.width - width_px) / 2),
+        ])
+        .split(popup_layout)[1] // Return the middle chunk
 }
 
 /// helper function to create a centered rect to fit the given paragraph in

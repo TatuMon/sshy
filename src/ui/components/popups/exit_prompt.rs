@@ -6,7 +6,7 @@ use ratatui::{
     Frame,
 };
 
-use crate::ui::ui_utils::centered_rect_for_paragraph;
+use crate::ui::ui_utils::{centered_rect_for_paragraph, styles};
 
 pub fn draw_exit_popup(f: &mut Frame) {
     // f.render_widget(Clear, f.size()); //this clears the entire screen and anything already drawn
@@ -15,10 +15,11 @@ pub fn draw_exit_popup(f: &mut Frame) {
         .title_position(Position::Bottom)
         .title("q to confirm")
         .borders(Borders::ALL)
-        .border_type(BorderType::Rounded);
+        .border_type(BorderType::Rounded)
+        .border_style(styles::fg_danger());
 
     let exit_text = Text::styled(
-        "Are you sure you want to exit the application?",
+        "Are you sure you want to quit?",
         Style::default().fg(Color::Red),
     );
     // the `trim: false` will stop the text from being cut off when over the edge of the block

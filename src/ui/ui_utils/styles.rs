@@ -10,3 +10,8 @@ pub fn focused_border() -> Style {
     Style::new()
         .fg(Color::LightYellow)
 }
+
+pub fn fg_danger() -> Style {
+    Style::new()
+        .fg(Color::Red)
+}

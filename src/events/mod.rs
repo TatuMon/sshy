@@ -3,7 +3,7 @@ pub mod messages;
 use std::time::Duration;
 
 use color_eyre::eyre::{Context, Result};
-use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers, ModifierKeyCode};
+use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 
 use crate::{
     model::Model,
