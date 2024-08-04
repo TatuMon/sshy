@@ -27,12 +27,25 @@ pub enum NewPublicKeyFocus {
     // KeyType For now, only ED25519 is available
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct NewPublicKeyState {
     name: String,
     key_type: PublicKeyType,
     comment: String,
     current_focus: NewPublicKeyFocus
+}
+
+impl Default for NewPublicKeyState {
+    fn default() -> Self {
+        let def_keytype = PublicKeyType::default();
+        let name: &str = def_keytype.into();
+        Self{
+            name: format!("id_{}", name),
+            key_type: def_keytype,
+            comment: String::default(),
+            current_focus: NewPublicKeyFocus::Name
+        }
+    }
 }
 
 impl NewPublicKeyState {
@@ -92,6 +105,10 @@ impl NewPublicKeyState {
             NewPublicKeyFocus::Comment => self.current_focus = NewPublicKeyFocus::Name,
             NewPublicKeyFocus::Name => self.current_focus = NewPublicKeyFocus::Comment
         }
+    }
+
+    pub fn run_keygen_command(&self) {
+        
     }
 }
 
