@@ -1,6 +1,7 @@
 use crate::ui::components::{popups::Popup, sections::Section};
 
-
+/// Messages are events that the model has to react to and update it's
+/// state
 #[derive(Clone)]
 pub enum Message {
     StopApp,

@@ -1,23 +1,9 @@
 
 use serde::Serialize;
 
-use crate::utils::{self, strings};
+use crate::{ssh_commands::ssh_keygen::PublicKeyType, utils::{self, strings}};
 
 type ListItems = Vec<String>;
-
-#[derive(Clone, Copy, Default)]
-pub enum PublicKeyType {
-    #[default]
-    ED25519
-}
-
-impl From<PublicKeyType> for &str {
-    fn from(value: PublicKeyType) -> Self {
-        match value {
-            PublicKeyType::ED25519 => "ed25519"
-        }
-    }
-}
 
 #[derive(Clone, Copy, Default, PartialEq)]
 pub enum NewPublicKeyFocus {
@@ -27,12 +13,20 @@ pub enum NewPublicKeyFocus {
     // KeyType For now, only ED25519 is available
 }
 
+#[derive(Clone, Copy)]
+enum Prompting {
+    Filename,
+    Passphrase
+}
+
 #[derive(Clone)]
 pub struct NewPublicKeyState {
     name: String,
     key_type: PublicKeyType,
     comment: String,
-    current_focus: NewPublicKeyFocus
+    current_focus: NewPublicKeyFocus,
+    prompting: Option<Prompting>,
+    loading: bool
 }
 
 impl Default for NewPublicKeyState {
@@ -43,12 +37,22 @@ impl Default for NewPublicKeyState {
             name: format!("id_{}", name),
             key_type: def_keytype,
             comment: String::default(),
-            current_focus: NewPublicKeyFocus::Name
+            current_focus: NewPublicKeyFocus::Name,
+            prompting: None,
+            loading: false
         }
     }
 }
 
 impl NewPublicKeyState {
+    pub fn prompt_filename(&mut self) {
+        self.prompting = Some(Prompting::Filename);
+    }
+
+    pub fn prompt_passphrase(&mut self) {
+        self.prompting = Some(Prompting::Passphrase);
+    }
+
     pub fn get_name(&self) -> &str {
         self.name.as_str()
     }

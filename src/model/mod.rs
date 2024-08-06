@@ -24,7 +24,7 @@ pub enum RunningState {
 ///
 /// Changes made to this struct MUST be issued using the 'update' method, which
 /// updates the state based on the given Message
-#[derive(Clone, Default, Serialize)]
+#[derive(Default, Serialize)]
 pub struct Model {
     running_state: RunningState,
     current_popup: Option<Popup>,
@@ -114,7 +114,7 @@ impl Model {
                         _ => {}
                     }
                 }
-            },
+            }
             Message::WriteChar(ch) => {
                 if let Focus::Popup(popup) = self.current_focus {
                     match popup {
@@ -126,14 +126,14 @@ impl Model {
 
                             match new_key_state.get_focus() {
                                 NewPublicKeyFocus::Name => new_key_state.write_name(ch),
-                                NewPublicKeyFocus::Comment => new_key_state.write_comment(ch)
+                                NewPublicKeyFocus::Comment => new_key_state.write_comment(ch),
                             }
                         }
                         Popup::ExitPrompt => {}
                         _ => {}
                     }
                 }
-            },
+            }
             Message::PopChar => {
                 if let Focus::Popup(popup) = self.current_focus {
                     match popup {
@@ -145,14 +145,14 @@ impl Model {
 
                             match new_key_state.get_focus() {
                                 NewPublicKeyFocus::Name => new_key_state.del_name(),
-                                NewPublicKeyFocus::Comment => new_key_state.del_comment()
+                                NewPublicKeyFocus::Comment => new_key_state.del_comment(),
                             }
                         }
                         Popup::ExitPrompt => {}
                         _ => {}
                     }
                 }
-            },
+            }
             Message::PopWord => {
                 if let Focus::Popup(popup) = self.current_focus {
                     match popup {
@@ -164,14 +164,14 @@ impl Model {
 
                             match new_key_state.get_focus() {
                                 NewPublicKeyFocus::Name => new_key_state.del_name_word(),
-                                NewPublicKeyFocus::Comment => new_key_state.del_comment_word()
+                                NewPublicKeyFocus::Comment => new_key_state.del_comment_word(),
                             }
                         }
                         Popup::ExitPrompt => {}
                         _ => {}
                     }
                 }
-            },
+            }
             _ => {}
         }
     }
