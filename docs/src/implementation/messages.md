@@ -12,6 +12,6 @@ module
 
 ## Message and event handling
 All messages (and thus, events) are handled, asynchronously, by an instance of
-`events::EventHandler`, which starts the `event loop` and populates the internal
+`events::EventHandler`, which starts the `event loop` and populates the model's
 messages queue. This queue can then be consumed calling
 `EventHandler::next_message()` in the main loop.
