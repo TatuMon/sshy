@@ -1,4 +1,7 @@
 # Summary
 
 - [Introduction](./introduction.md)
-- [App design](./app-design.md)
+- [Implementation](./implementation/README.md)
+    - [Messages](./implementation/messages.md)
+    - [Sections](./implementation/sections.md)
+    - [Commands and subprocesses](./implementation/commands.md)
