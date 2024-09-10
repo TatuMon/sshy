@@ -1,7 +1,7 @@
 # Implementation:
 I'm **trying** to follow [The Elm Architecture](https://guide.elm-lang.org/architecture/),
-implementing the model in `model/mod.rs`, the `update` functionality as a method
-of the `Model` struct and the **drawing** in the `ui` module.
+implementing the model in `model/mod.rs`, defining the `update` functionality as
+a method of the `Model` struct and handling the **drawing** in the `ui` module.
 
 ## App flow
 The app runs in the following way:
