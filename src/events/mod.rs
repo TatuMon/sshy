@@ -15,16 +15,31 @@ use crate::{
 
 use self::messages::Message;
 
+enum EventLoopSignal {
+    Close,
+}
+
 pub struct EventHandler {
+    // Used for communication with commands and subprocesses
     msg_rx: mpsc::Receiver<Message>,
     msg_tx: mpsc::Sender<Message>,
+
+    // Used for communication with the event loop's thread
+    loop_sig_rx: mpsc::Receiver<EventLoopSignal>,
+    loop_sig_tx: mpsc::Sender<EventLoopSignal>,
 }
 
 impl Default for EventHandler {
     fn default() -> Self {
         let (msg_tx, msg_rx) = mpsc::channel::<Message>();
+        let (loop_sig_tx, loop_sig_rx) = mpsc::channel::<EventLoopSignal>();
 
-        Self { msg_rx, msg_tx }
+        Self {
+            msg_rx,
+            msg_tx,
+            loop_sig_tx,
+            loop_sig_rx,
+        }
     }
 }
 
@@ -141,4 +156,6 @@ impl EventHandler {
             _ => None,
         }
     }
+
+    pub fn start_loop(&self) {}
 }
