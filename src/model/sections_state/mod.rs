@@ -26,9 +26,9 @@ impl SectionsStates {
                 if section == SECTIONS_ORDER.last().unwrap() {
                     return section.to_owned();
                 } else {
-                    let next_section = SECTIONS_ORDER[idx+1];
+                    let next_section = SECTIONS_ORDER[idx + 1];
                     self.set_focus(next_section);
-                    return next_section
+                    return next_section;
                 }
             }
         }
@@ -45,9 +45,9 @@ impl SectionsStates {
                 if section == SECTIONS_ORDER.first().unwrap() {
                     return section.to_owned();
                 } else {
-                    let prev_section = SECTIONS_ORDER[idx-1];
+                    let prev_section = SECTIONS_ORDER[idx - 1];
                     self.set_focus(prev_section);
-                    return prev_section
+                    return prev_section;
                 }
             }
         }
@@ -60,7 +60,7 @@ impl SectionsStates {
             Section::KnownHostsList => {
                 self.public_keys_list_state.unfocus();
                 self.known_hosts_list_state.focus();
-            },
+            }
             Section::PublicKeysList => {
                 self.known_hosts_list_state.unfocus();
                 self.public_keys_list_state.focus();

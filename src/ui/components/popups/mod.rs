@@ -1,6 +1,6 @@
-pub mod exit_prompt;
-pub mod debug_model;
 pub mod add_pub_key;
+pub mod debug_model;
+pub mod exit_prompt;
 
 use serde::Serialize;
 
@@ -9,5 +9,5 @@ pub enum Popup {
     ExitPrompt,
     AddPubKey,
     /// Popup used to debug the model's state
-    DebugModel
+    DebugModel,
 }

@@ -12,5 +12,5 @@ use std::process::Command;
 
 /// Struct to handle child command synchronously
 pub struct SyncCommand {
-    cmd: Option<Command>
+    cmd: Option<Command>,
 }

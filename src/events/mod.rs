@@ -1,6 +1,6 @@
 pub mod messages;
 
-use std::{sync::mpsc, time::Duration};
+use std::{collections::VecDeque, sync::mpsc, time::Duration};
 
 use color_eyre::eyre::{Context, Result};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
@@ -15,52 +15,50 @@ use crate::{
 
 use self::messages::Message;
 
-enum EventLoopSignal {
-    Close,
-}
-
 pub struct EventHandler {
     // Used for communication with commands and subprocesses
-    msg_rx: mpsc::Receiver<Message>,
-    msg_tx: mpsc::Sender<Message>,
-
-    // Used for communication with the event loop's thread
-    loop_sig_rx: mpsc::Receiver<EventLoopSignal>,
-    loop_sig_tx: mpsc::Sender<EventLoopSignal>,
+    task_msg_rx: mpsc::Receiver<Message>,
+    task_msg_tx: mpsc::Sender<Message>,
 }
 
 impl Default for EventHandler {
     fn default() -> Self {
-        let (msg_tx, msg_rx) = mpsc::channel::<Message>();
-        let (loop_sig_tx, loop_sig_rx) = mpsc::channel::<EventLoopSignal>();
+        let (task_msg_tx, task_msg_rx) = mpsc::channel::<Message>();
 
         Self {
-            msg_rx,
-            msg_tx,
-            loop_sig_tx,
-            loop_sig_rx,
+            task_msg_rx,
+            task_msg_tx,
         }
     }
 }
 
 impl EventHandler {
-    /// Returns a message based on the incoming event
+    /// Returns an iterator over a list of messages created based on the newly
+    /// polled events
     ///
-    /// This event could be user input, incoming data of the SSH session, etc.
+    /// # What events?
+    /// These events could be user input, incoming data of the SSH session, etc.
     ///
-    /// # NOTE
-    /// This function is non-blocking
-    pub fn poll_message(&self, model: &Model) -> Result<Option<Message>> {
+    /// # In which order are messages added to the queue?
+    ///     1. User input events
+    ///     2. Commands and subprocesses events, in the order they were received
+    pub fn poll_messages(&self, model: &Model) -> Result<impl Iterator<Item = Message>> {
+        let mut queue = VecDeque::new();
+
         if let Some(event) = self.poll_crossterm_event()? {
-            match event {
-                Event::Key(key_event) => Ok(self.handle_key_event(key_event, model)),
-                Event::Resize(_, _) => Ok(Some(Message::Draw)),
+            let crossterm_event_msg = match event {
+                Event::Key(key_event) => self.handle_key_event(key_event, model),
+                Event::Resize(_, _) => Some(Message::Draw),
                 // Event::Mouse(mouse_event) => Ok(handle_mouse_event(mouse_event)),
-                _ => Ok(None),
+                _ => None,
+            };
+
+            if let Some(msg) = crossterm_event_msg {
+                queue.push_back(msg);
             }
-        } else {
-            Ok(None)
-        }
+        };
+
+        Ok(queue.into_iter())
     }
 
     /// Check if there's an unhandled event waiting to be handled
@@ -81,10 +79,6 @@ impl EventHandler {
     /// # NOTE
     /// When this function starts to get too complex, try to give each key code a
     /// separate function
-    ///
-    /// # TODO
-    /// Before matching the event's code, the function should first match the model's
-    /// focus
     ///
     /// Matching the code first, makes it impossible to write to an input
     fn handle_key_event(&self, key: KeyEvent, model: &Model) -> Option<Message> {
@@ -156,6 +150,4 @@ impl EventHandler {
             _ => None,
         }
     }
-
-    pub fn start_loop(&self) {}
 }

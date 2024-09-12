@@ -11,5 +11,5 @@ use serde::Serialize;
 pub enum Section {
     #[default]
     KnownHostsList,
-    PublicKeysList
+    PublicKeysList,
 }

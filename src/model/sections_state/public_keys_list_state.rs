@@ -1,7 +1,9 @@
-
 use serde::Serialize;
 
-use crate::{ssh_commands::ssh_keygen::PublicKeyType, utils::{self, strings}};
+use crate::{
+    ssh_commands::ssh_keygen::PublicKeyType,
+    utils::{self, strings},
+};
 
 type ListItems = Vec<String>;
 
@@ -16,7 +18,7 @@ pub enum NewPublicKeyFocus {
 #[derive(Clone, Copy)]
 enum Prompting {
     Filename,
-    Passphrase
+    Passphrase,
 }
 
 #[derive(Clone)]
@@ -26,20 +28,20 @@ pub struct NewPublicKeyState {
     comment: String,
     current_focus: NewPublicKeyFocus,
     prompting: Option<Prompting>,
-    loading: bool
+    loading: bool,
 }
 
 impl Default for NewPublicKeyState {
     fn default() -> Self {
         let def_keytype = PublicKeyType::default();
         let name: &str = def_keytype.into();
-        Self{
+        Self {
             name: format!("id_{}", name),
             key_type: def_keytype,
             comment: String::default(),
             current_focus: NewPublicKeyFocus::Name,
             prompting: None,
-            loading: false
+            loading: false,
         }
     }
 }
@@ -107,20 +109,19 @@ impl NewPublicKeyState {
     pub fn prev_focus(&mut self) {
         match self.current_focus {
             NewPublicKeyFocus::Comment => self.current_focus = NewPublicKeyFocus::Name,
-            NewPublicKeyFocus::Name => self.current_focus = NewPublicKeyFocus::Comment
+            NewPublicKeyFocus::Name => self.current_focus = NewPublicKeyFocus::Comment,
         }
     }
 
-    pub fn run_keygen_command(&self) {
-        
-    }
+    pub fn run_keygen_command(&self) {}
 }
 
 #[derive(Clone)]
-pub struct PublicKeysListState { items: ListItems,
+pub struct PublicKeysListState {
+    items: ListItems,
     selected_item_idx: Option<usize>,
     has_focus: bool,
-    new_key_state: NewPublicKeyState
+    new_key_state: NewPublicKeyState,
 }
 
 impl PublicKeysListState {
@@ -155,26 +156,34 @@ impl PublicKeysListState {
 
     pub fn next_item(&mut self) {
         match self.selected_item_idx {
-            None => if !self.items.is_empty() {
-                self.selected_item_idx = Some(0)
-            },
-            Some(idx) => if idx < self.items.len()-1 {
-                self.selected_item_idx = Some(idx + 1)
+            None => {
+                if !self.items.is_empty() {
+                    self.selected_item_idx = Some(0)
+                }
+            }
+            Some(idx) => {
+                if idx < self.items.len() - 1 {
+                    self.selected_item_idx = Some(idx + 1)
+                }
             }
         }
     }
 
     pub fn prev_item(&mut self) {
         match self.selected_item_idx {
-            None => if !self.items.is_empty() {
-                self.selected_item_idx = Some(0)
-            },
-            Some(idx) => if idx > 0 {
-                self.selected_item_idx = Some(idx - 1)
+            None => {
+                if !self.items.is_empty() {
+                    self.selected_item_idx = Some(0)
+                }
+            }
+            Some(idx) => {
+                if idx > 0 {
+                    self.selected_item_idx = Some(idx - 1)
+                }
             }
         }
     }
-    
+
     pub fn get_new_key_state(&self) -> &NewPublicKeyState {
         &self.new_key_state
     }
@@ -186,11 +195,11 @@ impl PublicKeysListState {
 
 impl Default for PublicKeysListState {
     fn default() -> Self {
-        let mut state = Self{
-            items: vec!(),
+        let mut state = Self {
+            items: vec![],
             selected_item_idx: None,
             has_focus: false,
-            new_key_state: NewPublicKeyState::default()
+            new_key_state: NewPublicKeyState::default(),
         };
 
         state.load_public_keys();

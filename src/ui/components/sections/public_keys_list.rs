@@ -5,7 +5,9 @@ use ratatui::{
     Frame,
 };
 
-use crate::{ui::ui_utils::styles, model::sections_state::public_keys_list_state::PublicKeysListState};
+use crate::{
+    model::sections_state::public_keys_list_state::PublicKeysListState, ui::ui_utils::styles,
+};
 
 pub fn draw(f: &mut Frame, section_state: &PublicKeysListState) {
     let mut block = Block::default()

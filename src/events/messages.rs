@@ -17,5 +17,5 @@ pub enum Message {
     SelPrevPopupItem,
     WriteChar(char),
     PopChar,
-    PopWord
+    PopWord,
 }

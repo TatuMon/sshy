@@ -1,6 +1,12 @@
-use ratatui::{widgets::{Paragraph, Clear}, Frame};
+use ratatui::{
+    widgets::{Clear, Paragraph},
+    Frame,
+};
 
-use crate::{model::Model, ui::ui_utils::{centered_rect, popups}};
+use crate::{
+    model::Model,
+    ui::ui_utils::{centered_rect, popups},
+};
 
 pub fn draw_debug_model_popup(f: &mut Frame, model: &Model) {
     let model_json = serde_json::to_string_pretty(model)
@@ -8,8 +14,7 @@ pub fn draw_debug_model_popup(f: &mut Frame, model: &Model) {
 
     let block = popups::basic_popup_block("Model state");
 
-    let paragraph = Paragraph::new(model_json)
-        .block(block);
+    let paragraph = Paragraph::new(model_json).block(block);
 
     let area = centered_rect(50, 50, f.size());
 

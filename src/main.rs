@@ -1,9 +1,9 @@
-pub mod utils;
 pub mod events;
 pub mod model;
+pub mod ssh_commands;
 pub mod terminal;
 pub mod ui;
-pub mod ssh_commands;
+pub mod utils;
 
 use color_eyre::eyre::Result;
 use events::EventHandler;
@@ -21,7 +21,7 @@ fn main() -> Result<()> {
     let event_handler = EventHandler::default();
 
     while !model.is_app_done() {
-        if let Some(message) = event_handler.poll_message(&model)? {
+        for message in event_handler.poll_messages(&model)? {
             model.update(message);
             draw(&mut terminal, &model)?
         }
