@@ -11,7 +11,11 @@ it should update it's state to show the `ExitPrompt` popup
 module
 
 ## Message and event handling
-All messages (and thus, events) are handled, asynchronously, by an instance of
-`events::EventHandler`, which starts the `event loop` and populates the handler's
-messages queue. This queue can then be consumed calling
-`EventHandler::next_message()` in the main loop.
+All events, like user input and [commands/subprocesses](./commands.md), are
+handled by the EventHandler. This struct has a public method called `poll_messages`,
+that polles events from different sources, creates the appropiate messages based
+on the events and the current state of the model, and returns an iterator over
+a queue of messages, which are then processed by the main loop, thus updating
+the model's state.
+
+> Commands and subprocesses event handling is explained [here](./commands.md#task-event-handling)

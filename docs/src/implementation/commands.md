@@ -53,3 +53,12 @@ two happened
 prompting the user for input that will be forwarded to `commands::SshKeygen`
 8. Finally, when the command finishes (after receiving the `CmdFinished(...)`
 message), a popup will show the result of it.
+
+## Task event handling
+All tasks should communicate with the main loop via messages, like every
+communication in this app. To do this, the EventHandler has two fields defined,
+`task_msg_rx` and `task_msg_tx`, which are the receiving and sending halves of
+`mpsc` channel. All created commands and subprocesses must have a copy of
+`task_msg_tx` to be able to communicate with the receiving end of the channel,
+which is reserved for the EventHandler that then reads it when
+`poll_messages` is called.
