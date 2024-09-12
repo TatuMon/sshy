@@ -76,7 +76,7 @@ impl NewPublicKeyState {
     }
 
     pub fn del_name_word(&mut self) {
-        self.name = strings::del_word(self.name.to_owned());
+        self.name = strings::del_last_word(self.name.to_owned());
     }
 
     pub fn write_comment(&mut self, ch: char) {
@@ -88,7 +88,7 @@ impl NewPublicKeyState {
     }
 
     pub fn del_comment_word(&mut self) {
-        self.comment = strings::del_word(self.comment.to_owned());
+        self.comment = strings::del_last_word(self.comment.to_owned());
     }
 
     pub fn get_focus(&self) -> NewPublicKeyFocus {
