@@ -6,6 +6,7 @@ use color_eyre::eyre::{Context, Result};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 
 use crate::{
+    commands::{self, ssh_keygen::SshKeygenCmd, CmdTask, Task},
     model::Model,
     ui::{
         components::{popups::Popup, sections::Section},
@@ -17,8 +18,9 @@ use self::messages::Message;
 
 pub struct EventHandler {
     // Used for communication with commands and subprocesses
-    task_msg_rx: mpsc::Receiver<Message>,
-    task_msg_tx: mpsc::Sender<Message>,
+    task_msg_rx: commands::TaskMessageRx,
+    task_msg_tx: commands::TaskMessageTx,
+    running_cmd: Option<Box<dyn Task>>
 }
 
 impl Default for EventHandler {
@@ -28,6 +30,7 @@ impl Default for EventHandler {
         Self {
             task_msg_rx,
             task_msg_tx,
+            running_cmd: None
         }
     }
 }
@@ -42,7 +45,7 @@ impl EventHandler {
     /// # In which order are messages added to the queue?
     ///     1. User input events
     ///     2. Commands and subprocesses events, in the order they were received
-    pub fn poll_messages(&self, model: &Model) -> Result<impl Iterator<Item = Message>> {
+    pub fn poll_messages(&mut self, model: &Model) -> Result<impl Iterator<Item = Message>> {
         let mut queue = VecDeque::new();
 
         if let Some(event) = self.poll_crossterm_event()? {
@@ -81,10 +84,10 @@ impl EventHandler {
     /// separate function
     ///
     /// Matching the code first, makes it impossible to write to an input
-    fn handle_key_event(&self, key: KeyEvent, model: &Model) -> Option<Message> {
+    fn handle_key_event(&mut self, key: KeyEvent, model: &Model) -> Option<Message> {
         match model.get_focus() {
             Focus::Section(section) => self.handle_section_key_event(section, key),
-            Focus::Popup(popup) => self.handle_popup_key_event(popup, key),
+            Focus::Popup(popup) => self.handle_popup_key_event(popup, key, model),
         }
     }
 
@@ -107,11 +110,64 @@ impl EventHandler {
         }
     }
 
-    fn handle_popup_key_event(&self, popup: Popup, key: KeyEvent) -> Option<Message> {
+    /// Starts the given command task
+    ///
+    /// # Returns
+    /// Returns either:
+    ///     - Message::CmdSpawned(cmd_task)
+    ///     - Message::PrintError(error_str)
+    fn start_command(&mut self, cmd_task: commands::CmdTask, model: &Model) -> Message {
+        let msg_tx_cp = self.task_msg_tx.clone();
+
+        match cmd_task {
+            CmdTask::SshKeygen => {
+                let mut cmd = SshKeygenCmd::new(
+                    model
+                        .get_sections_state()
+                        .get_public_keys_list_state()
+                        .get_new_key_state(),
+                );
+                match cmd.start(msg_tx_cp) {
+                    Err(err) => Message::PrintError(err.to_string()),
+                    _ => {
+                        self.running_cmd = Some(Box::new(cmd));
+                        Message::CmdSpawned(cmd_task)
+                    },
+                }
+            }
+        }
+    }
+
+    /// Terminates the currently running command
+    ///
+    /// # Returns
+    /// Returns either:
+    ///     - Message::CmdFinished
+    ///     - Message::PrintError
+    fn terminate_command(&mut self) -> Message {
+        match &mut self.running_cmd {
+            None => Message::PrintError(String::from("no command is running")),
+            Some(cmd) => {
+                let termination = cmd.terminate().wrap_err("failed to terminate command");
+                match termination {
+                    Err(err) => Message::PrintError(err.to_string()),
+                    _ => Message::CmdFinished
+                }
+            }
+        }
+    }
+
+    fn handle_popup_key_event(
+        &mut self,
+        popup: Popup,
+        key: KeyEvent,
+        model: &Model,
+    ) -> Option<Message> {
         match key.code {
             KeyCode::Char(ch) => match popup {
                 Popup::ExitPrompt => {
                     if ch == 'q' {
+                        let _ = self.terminate_command();
                         Some(Message::StopApp)
                     } else {
                         None
@@ -129,20 +185,7 @@ impl EventHandler {
             KeyCode::BackTab => Some(Message::SelPrevPopupItem),
             KeyCode::Enter => {
                 if let Popup::AddPubKey = popup {
-                    //  - The ssh-keygen command will be ran here
-                    //  - Create an "EventHandler" struct that will run these existing
-                    //      functions but will algo have a mpsc channel
-                    //  - THIS branch will call the ssh_commands::SshKeygenCmd::run method,
-                    //      which will receive a "tx" from the EventHandler's mpsc channel
-                    //  - The keygen command will produce the appropiate messages based
-                    //      on the command's outputs (like prompting the user for a
-                    //      passphare) and send them through the "tx"
-                    //  - The method EventHandler::poll_chan_events will read the associated
-                    //      mpsc channel and handle the messages appropiately
-                    //      - In other words: the ssh-keygen command struct will PRODUCE
-                    //          messages and the EventHandler will (you guessed it) HANDLE
-                    //          them
-                    None
+                    Some(self.start_command(CmdTask::SshKeygen, model))
                 } else {
                     None
                 }

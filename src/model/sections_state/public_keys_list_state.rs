@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 use crate::{
-    ssh_commands::ssh_keygen::PublicKeyType,
+    commands::ssh_keygen::PublicKeyType,
     utils::{self, strings},
 };
 
@@ -21,14 +21,12 @@ enum Prompting {
     Passphrase,
 }
 
-#[derive(Clone)]
 pub struct NewPublicKeyState {
     name: String,
     key_type: PublicKeyType,
     comment: String,
     current_focus: NewPublicKeyFocus,
     prompting: Option<Prompting>,
-    loading: bool,
 }
 
 impl Default for NewPublicKeyState {
@@ -41,7 +39,6 @@ impl Default for NewPublicKeyState {
             comment: String::default(),
             current_focus: NewPublicKeyFocus::Name,
             prompting: None,
-            loading: false,
         }
     }
 }
@@ -116,7 +113,6 @@ impl NewPublicKeyState {
     pub fn run_keygen_command(&self) {}
 }
 
-#[derive(Clone)]
 pub struct PublicKeysListState {
     items: ListItems,
     selected_item_idx: Option<usize>,

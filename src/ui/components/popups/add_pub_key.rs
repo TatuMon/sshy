@@ -1,5 +1,6 @@
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
+    text::Line,
     widgets::Clear,
     Frame,
 };
@@ -15,7 +16,8 @@ pub fn draw_add_pub_key_popup(f: &mut Frame, model: &Model) {
         .get_public_keys_list_state()
         .get_new_key_state();
 
-    let popup_block = popups::basic_popup_block("New public key (ssh-keygen)");
+    let popup_block = popups::basic_popup_block("New public key (ssh-keygen)")
+        .title_bottom(Line::from("Press ⏎ to confirm").right_aligned());
 
     let f_area = f.size();
     let area = centered_rect_px(f_area.width / 2, 13, f_area);

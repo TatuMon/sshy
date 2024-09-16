@@ -2,6 +2,7 @@ pub mod components;
 pub mod ui_utils;
 
 use color_eyre::eyre::{Context, Result};
+use components::popups::waiting_cmd;
 use serde::Serialize;
 
 use crate::{model::Model, terminal::SshyTerminal};
@@ -39,6 +40,7 @@ pub fn draw(terminal: &mut SshyTerminal, model: &Model) -> Result<()> {
                     Popup::ExitPrompt => exit_prompt::draw_exit_popup(f),
                     Popup::DebugModel => debug_model::draw_debug_model_popup(f, model),
                     Popup::AddPubKey => add_pub_key::draw_add_pub_key_popup(f, model),
+                    Popup::WaitingCmd => waiting_cmd::draw_waiting_cmd(f, model)
                 }
             }
         })

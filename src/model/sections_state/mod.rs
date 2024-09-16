@@ -11,7 +11,7 @@ pub mod public_keys_list_state;
 
 const SECTIONS_ORDER: [Section; 2] = [Section::KnownHostsList, Section::PublicKeysList];
 
-#[derive(Clone, Default, Serialize)]
+#[derive(Default, Serialize)]
 pub struct SectionsStates {
     known_hosts_list_state: KnownHostsListState,
     public_keys_list_state: PublicKeysListState,

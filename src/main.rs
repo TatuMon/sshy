@@ -1,9 +1,9 @@
-pub mod events;
-pub mod model;
-pub mod ssh_commands;
-pub mod terminal;
-pub mod ui;
-pub mod utils;
+mod commands;
+mod events;
+mod model;
+mod terminal;
+mod ui;
+mod utils;
 
 use color_eyre::eyre::Result;
 use events::EventHandler;
@@ -18,7 +18,7 @@ fn main() -> Result<()> {
     // Initial app draw
     draw(&mut terminal, &model)?;
 
-    let event_handler = EventHandler::default();
+    let mut event_handler = EventHandler::default();
 
     while !model.is_app_done() {
         for message in event_handler.poll_messages(&model)? {

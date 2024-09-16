@@ -4,11 +4,10 @@ use sections_state::public_keys_list_state::NewPublicKeyFocus;
 use serde::Serialize;
 
 use crate::{
-    events::messages::Message,
-    ui::{
+    commands::{self, CmdTask}, events::messages::Message, ui::{
         components::{popups::Popup, sections::Section},
         Focus,
-    },
+    }
 };
 
 use self::sections_state::SectionsStates;
@@ -31,6 +30,8 @@ pub struct Model {
     current_focus: Focus,
     previous_focus: Focus,
     sections_states: SectionsStates,
+    /// Indicates which, if any, is the currently running command
+    current_command: Option<CmdTask>
 }
 
 impl Model {
@@ -172,17 +173,26 @@ impl Model {
                     }
                 }
             }
+            Message::CmdSpawned(cmd_task) => match cmd_task {
+                CmdTask::SshKeygen => {
+                    self.current_command = Some(cmd_task);
+                    self.current_popup = Some(Popup::WaitingCmd);
+                }
+            }
             _ => {}
         }
     }
 
     /// Returns if there's a popup currently being shown
-    pub fn on_popup(&self) -> bool {
-        self.current_popup.is_some()
+    pub fn on_popup(&self) -> bool { self.current_popup.is_some()
     }
 
     pub fn get_sections_state(&self) -> &SectionsStates {
         &self.sections_states
+    }
+
+    pub fn get_current_command(&self) -> Option<commands::CmdTask> {
+        self.current_command
     }
 
     /// Setting a popup should also set the current section

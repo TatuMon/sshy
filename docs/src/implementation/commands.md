@@ -33,7 +33,7 @@ list of running processes and their state must be defined there.
 1. Having focus in the `AddPubKey` popup, the user, after specifying the new key's
 name, type and comment, presses "enter"
 2. This will cause the `EventHandler` to add a message of type
-`StartCmd(commands::SshKeygen)`
+`CmdSpawned(commands::SshKeygen)`
 3. Which tells...
     - the model to set it's current command to `Some(commands::SshKeygen)`
     - and the event handler to start the `ssh-keygen`, using the model's 
