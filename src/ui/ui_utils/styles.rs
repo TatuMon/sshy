@@ -1,4 +1,3 @@
-use color_eyre::owo_colors::OwoColorize;
 use ratatui::style::{Color, Style};
 
 pub fn highlighted_item() -> Style {

@@ -12,6 +12,8 @@ pub fn draw_waiting_cmd(f: &mut Frame, model: &Model) {
 
     let popup_block = popups::loading_popup_block();
 
+    // TODO
+    // Make it available for other commands xd
     let text = match cmd_task {
         CmdTask::SshKeygen => "Generating key..."
     };

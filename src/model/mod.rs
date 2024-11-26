@@ -26,12 +26,18 @@ pub enum RunningState {
 #[derive(Default, Serialize)]
 pub struct Model {
     running_state: RunningState,
+    /// Don't manually modify it. Use self.set_popup instead.
     current_popup: Option<Popup>,
     current_focus: Focus,
     previous_focus: Focus,
     sections_states: SectionsStates,
     /// Indicates which, if any, is the currently running command
-    current_command: Option<CmdTask>
+    /// NOTE: For now, there'll only be a single command running at a time. In the future, I'm
+    /// thinking of being able to allow multiple commands at a time
+    current_commands: Vec<commands::CmdTask>,
+    /// When this field is Some, the content must the displayed in an error popup and ANY input
+    /// must end in the process termination
+    fatal_error: Option<String>
 }
 
 impl Model {
@@ -175,9 +181,13 @@ impl Model {
             }
             Message::CmdSpawned(cmd_task) => match cmd_task {
                 CmdTask::SshKeygen => {
-                    self.current_command = Some(cmd_task);
+                    self.current_commands.push(cmd_task);
                     self.current_popup = Some(Popup::WaitingCmd);
                 }
+            }
+            Message::CmdFinished => {
+                self.current_commands.clear();
+                self.set_popup(None);
             }
             _ => {}
         }
@@ -192,7 +202,15 @@ impl Model {
     }
 
     pub fn get_current_command(&self) -> Option<commands::CmdTask> {
-        self.current_command
+        for cmd_task in self.current_commands.iter() {
+            return Some(cmd_task.clone());
+        }
+
+        None
+    }
+
+    pub fn get_fatal_error(&self) -> Option<String> {
+        self.fatal_error.clone()
     }
 
     /// Setting a popup should also set the current section

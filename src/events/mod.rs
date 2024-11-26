@@ -1,6 +1,10 @@
 pub mod messages;
 
-use std::{collections::VecDeque, sync::mpsc, time::Duration};
+use std::{
+    collections::{HashMap, VecDeque},
+    sync::mpsc,
+    time::Duration,
+};
 
 use color_eyre::eyre::{Context, Result};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
@@ -20,7 +24,7 @@ pub struct EventHandler {
     // Used for communication with commands and subprocesses
     task_msg_rx: commands::TaskMessageRx,
     task_msg_tx: commands::TaskMessageTx,
-    running_cmd: Option<Box<dyn Task>>
+    cmd_writer_ends: commands::CmdWriterEnds,
 }
 
 impl Default for EventHandler {
@@ -30,7 +34,7 @@ impl Default for EventHandler {
         Self {
             task_msg_rx,
             task_msg_tx,
-            running_cmd: None
+            cmd_writer_ends: HashMap::new(),
         }
     }
 }
@@ -85,6 +89,10 @@ impl EventHandler {
     ///
     /// Matching the code first, makes it impossible to write to an input
     fn handle_key_event(&mut self, key: KeyEvent, model: &Model) -> Option<Message> {
+        if let Some(_) = model.get_fatal_error() {
+            return Some(Message::StopApp);
+        }
+
         match model.get_focus() {
             Focus::Section(section) => self.handle_section_key_event(section, key),
             Focus::Popup(popup) => self.handle_popup_key_event(popup, key, model),
@@ -121,39 +129,31 @@ impl EventHandler {
 
         match cmd_task {
             CmdTask::SshKeygen => {
-                let mut cmd = SshKeygenCmd::new(
+                let cmd_startup = SshKeygenCmd::start(
                     model
                         .get_sections_state()
                         .get_public_keys_list_state()
                         .get_new_key_state(),
+                    msg_tx_cp,
                 );
-                match cmd.start(msg_tx_cp) {
+                match cmd_startup {
                     Err(err) => Message::PrintError(err.to_string()),
-                    _ => {
-                        self.running_cmd = Some(Box::new(cmd));
+                    Ok(cmd_writer_end) => {
+                        self.cmd_writer_ends.insert(cmd_task, cmd_writer_end);
                         Message::CmdSpawned(cmd_task)
-                    },
+                    }
                 }
             }
         }
     }
 
-    /// Terminates the currently running command
-    ///
-    /// # Returns
-    /// Returns either:
-    ///     - Message::CmdFinished
-    ///     - Message::PrintError
-    fn terminate_command(&mut self) -> Message {
-        match &mut self.running_cmd {
-            None => Message::PrintError(String::from("no command is running")),
-            Some(cmd) => {
-                let termination = cmd.terminate().wrap_err("failed to terminate command");
-                match termination {
-                    Err(err) => Message::PrintError(err.to_string()),
-                    _ => Message::CmdFinished
-                }
-            }
+    fn kill_command(&mut self, cmd_task: commands::CmdTask) -> Message {
+        match self.cmd_writer_ends.get_mut(&cmd_task) {
+            Some(writer_end) => match writer_end.kill_child() {
+                Err(err) => Message::FatalError(err.to_string()),
+                Ok(_) => Message::CmdFinished,
+            },
+            None => Message::FatalError("ssh-keygen is not currently running".to_string()),
         }
     }
 
@@ -167,20 +167,30 @@ impl EventHandler {
             KeyCode::Char(ch) => match popup {
                 Popup::ExitPrompt => {
                     if ch == 'q' {
-                        let _ = self.terminate_command();
                         Some(Message::StopApp)
                     } else {
                         None
                     }
                 }
                 Popup::AddPubKey if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                    Some(Message::PopWord)
+                    if ch == 'w' {
+                        Some(Message::PopWord)
+                    } else {
+                        None
+                    }
                 }
                 Popup::AddPubKey => Some(Message::WriteChar(ch)),
+                Popup::WaitingCmd => match model.get_current_command() {
+                    None => Some(Message::HidePopup),
+                    Some(cmd_task) => Some(self.kill_command(cmd_task)),
+                },
                 _ => None,
             },
             KeyCode::Backspace => Some(Message::PopChar),
-            KeyCode::Esc => Some(Message::HidePopup),
+            KeyCode::Esc => match model.get_current_command() {
+                None => Some(Message::HidePopup),
+                Some(cmd_task) => Some(self.kill_command(cmd_task)),
+            },
             KeyCode::Tab => Some(Message::SelNextPopupItem),
             KeyCode::BackTab => Some(Message::SelPrevPopupItem),
             KeyCode::Enter => {

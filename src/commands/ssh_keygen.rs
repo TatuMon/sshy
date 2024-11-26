@@ -1,11 +1,13 @@
-use core::panic;
-use std::process::{Command, Stdio};
+use std::io;
 
-use color_eyre::eyre::{Context, Result};
+use color_eyre::eyre::{eyre, Result};
 
+use crate::events::messages::Message;
 use crate::model::sections_state::public_keys_list_state::NewPublicKeyState;
 
 use super::Task;
+
+type PortablePtyCmdChild = Box<dyn portable_pty::Child + Sync + Send>;
 
 #[derive(Clone, Copy, Default)]
 pub enum PublicKeyType {
@@ -24,67 +26,101 @@ impl From<PublicKeyType> for &str {
 pub struct SshKeygenCmd {
     keytype: PublicKeyType,
     filename: String,
-    passphrase: Option<String>,
     comment: String,
-    running: bool,
-    task_msg_tx: Option<super::TaskMessageTx>,
-    cmd_handle: Option<std::process::Child>,
 }
 
 impl Task for SshKeygenCmd {
-    fn start(&mut self, task_msg_tx: super::TaskMessageTx) -> Result<()> {
+    /// Starts the ssh-keygen command, creating a detached green-thread in charge
+    /// of handling the messaging between the the command and the app.
+    fn start(
+        new_key: &NewPublicKeyState,
+        task_msg_tx: super::TaskMessageTx,
+    ) -> Result<super::CmdWriterEnd> {
+        let cmd = SshKeygenCmd {
+            keytype: new_key.get_type(),
+            filename: new_key.get_name().into(),
+            comment: new_key.get_comment().into(),
+        };
+
         let args: [&str; 6] = [
             "-t",
-            self.keytype.into(),
+            cmd.keytype.into(),
             "-f",
-            &self.filename,
+            &cmd.filename,
             "-C",
-            &self.comment,
+            &cmd.comment,
         ];
 
-        let cmd_handle = Command::new("ssh-keygen")
-            .args(args)
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .spawn()
-            .wrap_err("error spawning ssh-keygen")?;
+        let pty_system = portable_pty::native_pty_system();
+        let pty_pair = pty_system
+            .openpty(portable_pty::PtySize {
+                rows: 24,
+                cols: 80,
+                pixel_width: 0,
+                pixel_height: 0,
+            })
+            .map_err(|e| eyre!("{}", e))?;
 
-        self.cmd_handle = Some(cmd_handle);
-        self.task_msg_tx = Some(task_msg_tx);
-        self.running = true;
+        let mut cmd_builder = portable_pty::CommandBuilder::new("ssh-keygen");
+        cmd_builder.args(args);
 
-        tokio::spawn(self.handle());
+        let child_cmd = pty_pair
+            .slave
+            .spawn_command(cmd_builder)
+            .map_err(|e| eyre!("error spawning ssh-keygen: {}", e))?;
 
-        Ok(())
-    }
+        let pty_reader = pty_pair
+            .master
+            .try_clone_reader()
+            .map_err(|e| eyre!("error getting command reader: {}", e))?;
 
-    /// Terminates the command
-    ///
-    /// # Panics
-    /// As this function must not be called before starting the command, it
-    /// panics if self.cmd_handle is None
-    fn terminate(&mut self) -> Result<()> {
-        match &mut self.cmd_handle {
-            None => panic!("no running command"),
-            Some(handle) => handle.kill().wrap_err("failed to terminate command"),
-        }
+        tokio::spawn(SshKeygenCmd::handle(super::CmdReaderEnd {
+            reader: pty_reader,
+            msg_sender: task_msg_tx,
+        }));
+
+        let writer = pty_pair
+            .master
+            .take_writer()
+            .map_err(|e| eyre!("error getting command writer: {}", e))?;
+
+        let child_killer = child_cmd.clone_killer();
+
+        let writer_end = super::CmdWriterEnd {
+            writer,
+            child_killer,
+        };
+
+        Ok(writer_end)
     }
 }
 
 impl SshKeygenCmd {
-    pub fn new(state: &NewPublicKeyState) -> Self {
-        Self {
-            keytype: state.get_type(),
-            filename: state.get_name().into(),
-            comment: state.get_comment().into(),
-            passphrase: None,
-            running: false,
-            task_msg_tx: None,
-            cmd_handle: None,
+    async fn handle(mut reader_end: super::CmdReaderEnd) {
+        let mut buf = [0u8; 1024];
+        loop {
+            match reader_end.reader.read(&mut buf) {
+                Ok(0) => {
+                    // EOF reached
+                    reader_end.msg_sender.send(Message::CmdFinished);
+                    break;
+                }
+                Ok(_n) => {
+                    // TODO
+                    // Send message indicating what to do next
+                    reader_end
+                        .msg_sender
+                        .send(Message::PrintError("VAMOOO".to_string()))
+                }
+                Err(e) => {
+                    if e.kind() == io::ErrorKind::WouldBlock {
+                        // No data available; optionally sleep or perform other work
+                        continue;
+                    } else {
+                        panic!("error reading from PTY: {}", e);
+                    }
+                }
+            };
         }
-    }
-
-    async fn handle(&self) {
-        println!("{}", self.comment);
     }
 }

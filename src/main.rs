@@ -11,7 +11,8 @@ use model::Model;
 use terminal::{end_terminal, setup_terminal};
 use ui::draw;
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let mut terminal = setup_terminal()?;
 
     let mut model = Model::default();
