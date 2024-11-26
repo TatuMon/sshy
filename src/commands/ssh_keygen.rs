@@ -7,8 +7,6 @@ use crate::model::sections_state::public_keys_list_state::NewPublicKeyState;
 
 use super::Task;
 
-type PortablePtyCmdChild = Box<dyn portable_pty::Child + Sync + Send>;
-
 #[derive(Clone, Copy, Default)]
 pub enum PublicKeyType {
     #[default]
@@ -102,15 +100,20 @@ impl SshKeygenCmd {
             match reader_end.reader.read(&mut buf) {
                 Ok(0) => {
                     // EOF reached
-                    reader_end.msg_sender.send(Message::CmdFinished);
+                    let _ = reader_end
+                        .msg_sender
+                        .send(Message::CmdFinished)
+                        .expect("failed to terminate child command");
                     break;
                 }
                 Ok(_n) => {
                     // TODO
                     // Send message indicating what to do next
-                    reader_end
+                    let content = String::from_utf8(buf.to_vec());
+                    println!("{}", content.unwrap());
+                    let _ = reader_end
                         .msg_sender
-                        .send(Message::PrintError("VAMOOO".to_string()))
+                        .send(Message::PrintError("VAMOOO".to_string()));
                 }
                 Err(e) => {
                     if e.kind() == io::ErrorKind::WouldBlock {
