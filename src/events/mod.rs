@@ -2,7 +2,7 @@ pub mod messages;
 
 use std::{
     collections::{HashMap, VecDeque},
-    sync::mpsc,
+    sync::mpsc::{self, TryRecvError},
     time::Duration,
 };
 
@@ -64,6 +64,14 @@ impl EventHandler {
                 queue.push_back(msg);
             }
         };
+
+        match self.task_msg_rx.try_recv() {
+            Err(err) if err != TryRecvError::Empty => {
+                queue.push_back(Message::PrintError(err.to_string()))
+            }
+            Ok(msg) => queue.push_back(msg),
+            _ => {}
+        }
 
         Ok(queue.into_iter())
     }

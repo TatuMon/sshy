@@ -8,14 +8,13 @@ use serde::Serialize;
 use crate::{model::Model, terminal::SshyTerminal};
 
 use self::components::{
-    popups::{add_pub_key, debug_model, exit_prompt, Popup},
+    popups::{add_pub_key, debug_model, exit_prompt, error_msg, Popup},
     sections::{known_hosts_list, public_keys_list, Section},
 };
 
 #[derive(Clone, Serialize)]
 pub enum Focus {
-    Popup(Popup),
-    Section(Section),
+    Popup(Popup), Section(Section),
 }
 
 impl Default for Focus {
@@ -40,7 +39,8 @@ pub fn draw(terminal: &mut SshyTerminal, model: &Model) -> Result<()> {
                     Popup::ExitPrompt => exit_prompt::draw_exit_popup(f),
                     Popup::DebugModel => debug_model::draw_debug_model_popup(f, model),
                     Popup::AddPubKey => add_pub_key::draw_add_pub_key_popup(f, model),
-                    Popup::WaitingCmd => waiting_cmd::draw_waiting_cmd(f, model)
+                    Popup::WaitingCmd => waiting_cmd::draw_waiting_cmd(f, model),
+                    Popup::ErrorMsg => error_msg::draw_error_msg(f, model)
                 }
             }
         })

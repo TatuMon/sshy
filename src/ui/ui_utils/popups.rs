@@ -18,3 +18,10 @@ pub fn loading_popup_block<'a>() -> Block<'a> {
         .border_type(BorderType::Rounded)
         .border_style(styles::loading_border())
 }
+
+pub fn error_popup_block<'a>() -> Block<'a> {
+    Block::default()
+        .borders(Borders::ALL)
+        .border_type(BorderType::Rounded)
+        .border_style(styles::fg_danger())
+}

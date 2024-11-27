@@ -29,7 +29,7 @@ pub struct Model {
     /// Don't manually modify it. Use self.set_popup instead.
     current_popup: Option<Popup>,
     current_focus: Focus,
-    previous_focus: Focus,
+    previous_focused_section: Focus,
     sections_states: SectionsStates,
     /// Indicates which, if any, is the currently running command
     /// NOTE: For now, there'll only be a single command running at a time. In the future, I'm
@@ -37,7 +37,9 @@ pub struct Model {
     current_commands: Vec<commands::CmdTask>,
     /// When this field is Some, the content must the displayed in an error popup and ANY input
     /// must end in the process termination
-    fatal_error: Option<String>
+    fatal_error: Option<String>,
+    /// The error message that should be displayed in the error popup
+    current_error: Option<String>
 }
 
 impl Model {
@@ -189,12 +191,12 @@ impl Model {
                 self.current_commands.clear();
                 self.set_popup(None);
             }
+            Message::PrintError(error_str) => {
+                self.current_error = Some(error_str);
+                self.set_popup(Some(Popup::ErrorMsg));
+            }
             _ => {}
         }
-    }
-
-    /// Returns if there's a popup currently being shown
-    pub fn on_popup(&self) -> bool { self.current_popup.is_some()
     }
 
     pub fn get_sections_state(&self) -> &SectionsStates {
@@ -213,14 +215,24 @@ impl Model {
         self.fatal_error.clone()
     }
 
+    pub fn get_current_error(&self) -> Option<String> {
+        self.current_error.clone()
+    }
+
     /// Setting a popup should also set the current section
-    fn set_popup(&mut self, popup: Option<Popup>) {
-        self.current_popup = popup;
-        if let Some(popup) = popup {
-            self.previous_focus = self.current_focus.clone();
+    fn set_popup(&mut self, new_popup: Option<Popup>) {
+        // If ErrorMsg was the previous popup, clear the error message
+        match self.current_popup {
+            Some(Popup::ErrorMsg) if new_popup.is_some_and(|v| v != Popup::ErrorMsg) => self.current_error = None,
+            _ => {}
+        }
+
+        self.current_popup = new_popup;
+        if let Some(popup) = new_popup {
+            // self.previous_focused_section = self.current_focus.clone();
             self.current_focus = Focus::Popup(popup);
         } else {
-            self.current_focus = self.previous_focus.clone();
+            self.current_focus = self.previous_focused_section.clone();
         }
     }
 
