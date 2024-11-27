@@ -8,7 +8,7 @@ use serde::Serialize;
 use crate::{model::Model, terminal::SshyTerminal};
 
 use self::components::{
-    popups::{add_pub_key, debug_model, exit_prompt, error_msg, Popup},
+    popups::{add_pub_key, debug_model, exit_prompt, error_msg, set_pub_key_passphrase, Popup},
     sections::{known_hosts_list, public_keys_list, Section},
 };
 
@@ -40,7 +40,8 @@ pub fn draw(terminal: &mut SshyTerminal, model: &Model) -> Result<()> {
                     Popup::DebugModel => debug_model::draw_debug_model_popup(f, model),
                     Popup::AddPubKey => add_pub_key::draw_add_pub_key_popup(f, model),
                     Popup::WaitingCmd => waiting_cmd::draw_waiting_cmd(f, model),
-                    Popup::ErrorMsg => error_msg::draw_error_msg(f, model)
+                    Popup::ErrorMsg => error_msg::draw_error_msg(f, model),
+                    Popup::PromptPassphrase => set_pub_key_passphrase::draw_set_pub_key_passphrase(f, model)
                 }
             }
         })

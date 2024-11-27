@@ -27,6 +27,7 @@ pub struct NewPublicKeyState {
     comment: String,
     current_focus: NewPublicKeyFocus,
     prompting: Option<Prompting>,
+    passphrase: Option<String>,
 }
 
 impl Default for NewPublicKeyState {
@@ -39,19 +40,12 @@ impl Default for NewPublicKeyState {
             comment: String::default(),
             current_focus: NewPublicKeyFocus::Name,
             prompting: None,
+            passphrase: None,
         }
     }
 }
 
 impl NewPublicKeyState {
-    pub fn prompt_filename(&mut self) {
-        self.prompting = Some(Prompting::Filename);
-    }
-
-    pub fn prompt_passphrase(&mut self) {
-        self.prompting = Some(Prompting::Passphrase);
-    }
-
     pub fn get_name(&self) -> &str {
         self.name.as_str()
     }
@@ -64,11 +58,25 @@ impl NewPublicKeyState {
         self.comment.as_str()
     }
 
+    pub fn get_passphrase_len(&self) -> usize {
+        match &self.passphrase {
+            None => 0,
+            Some(pass) => pass.len()
+        }
+    }
+
+    pub fn get_passphrase_bytes(&self) -> Vec<u8> {
+        match &self.passphrase {
+            None => vec!(),
+            Some(pass) => pass.clone().as_bytes().to_vec()
+        }
+    }
+
     pub fn write_name(&mut self, ch: char) {
         self.name.push(ch);
     }
 
-    pub fn del_name(&mut self) {
+    pub fn del_name_char(&mut self) {
         self.name.pop();
     }
 
@@ -80,7 +88,7 @@ impl NewPublicKeyState {
         self.comment.push(ch);
     }
 
-    pub fn del_comment(&mut self) {
+    pub fn del_comment_char(&mut self) {
         self.comment.pop();
     }
 
@@ -110,7 +118,25 @@ impl NewPublicKeyState {
         }
     }
 
-    pub fn run_keygen_command(&self) {}
+    pub fn write_passphrase(&mut self, ch: char) {
+        match &mut self.passphrase {
+            None => self.passphrase = Some(String::from(ch)),
+            Some(pass) => pass.push(ch),
+        }
+    }
+
+    pub fn del_passphare_char(&mut self) {
+        match &mut self.passphrase {
+            Some(pass) => {
+                pass.pop();
+            }
+            _ => {}
+        }
+    }
+
+    pub fn del_passphrase(&mut self) {
+        self.passphrase = None;
+    }
 }
 
 pub struct PublicKeysListState {

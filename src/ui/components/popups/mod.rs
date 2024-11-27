@@ -3,6 +3,7 @@ pub mod debug_model;
 pub mod exit_prompt;
 pub mod waiting_cmd;
 pub mod error_msg;
+pub mod set_pub_key_passphrase;
 
 use serde::Serialize;
 
@@ -13,5 +14,6 @@ pub enum Popup {
     /// Popup used to debug the model's state
     DebugModel,
     WaitingCmd,
-    ErrorMsg
+    ErrorMsg,
+    PromptPassphrase
 }

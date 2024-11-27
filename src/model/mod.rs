@@ -4,10 +4,12 @@ use sections_state::public_keys_list_state::NewPublicKeyFocus;
 use serde::Serialize;
 
 use crate::{
-    commands::{self, CmdTask}, events::messages::Message, ui::{
+    commands::{self, CmdTask},
+    events::messages::Message,
+    ui::{
         components::{popups::Popup, sections::Section},
         Focus,
-    }
+    },
 };
 
 use self::sections_state::SectionsStates;
@@ -39,7 +41,7 @@ pub struct Model {
     /// must end in the process termination
     fatal_error: Option<String>,
     /// The error message that should be displayed in the error popup
-    current_error: Option<String>
+    current_error: Option<String>,
 }
 
 impl Model {
@@ -138,6 +140,14 @@ impl Model {
                                 NewPublicKeyFocus::Comment => new_key_state.write_comment(ch),
                             }
                         }
+                        Popup::PromptPassphrase => {
+                            let new_key_state = self
+                                .sections_states
+                                .get_public_keys_list_state_mut()
+                                .get_new_key_state_mut();
+
+                            new_key_state.write_passphrase(ch);
+                        }
                         Popup::ExitPrompt => {}
                         _ => {}
                     }
@@ -153,9 +163,17 @@ impl Model {
                                 .get_new_key_state_mut();
 
                             match new_key_state.get_focus() {
-                                NewPublicKeyFocus::Name => new_key_state.del_name(),
-                                NewPublicKeyFocus::Comment => new_key_state.del_comment(),
+                                NewPublicKeyFocus::Name => new_key_state.del_name_char(),
+                                NewPublicKeyFocus::Comment => new_key_state.del_comment_char(),
                             }
+                        }
+                        Popup::PromptPassphrase => {
+                            let new_key_state = self
+                                .sections_states
+                                .get_public_keys_list_state_mut()
+                                .get_new_key_state_mut();
+
+                            new_key_state.del_passphare_char();
                         }
                         Popup::ExitPrompt => {}
                         _ => {}
@@ -176,6 +194,14 @@ impl Model {
                                 NewPublicKeyFocus::Comment => new_key_state.del_comment_word(),
                             }
                         }
+                        Popup::PromptPassphrase => {
+                            let new_key_state = self
+                                .sections_states
+                                .get_public_keys_list_state_mut()
+                                .get_new_key_state_mut();
+
+                            new_key_state.del_passphrase();
+                        }
                         Popup::ExitPrompt => {}
                         _ => {}
                     }
@@ -186,7 +212,7 @@ impl Model {
                     self.current_commands.push(cmd_task);
                     self.current_popup = Some(Popup::WaitingCmd);
                 }
-            }
+            },
             Message::CmdFinished => {
                 self.current_commands.clear();
                 self.set_popup(None);
@@ -194,6 +220,9 @@ impl Model {
             Message::PrintError(error_str) => {
                 self.current_error = Some(error_str);
                 self.set_popup(Some(Popup::ErrorMsg));
+            }
+            Message::PromptNewKeyPassphrase => {
+                self.set_popup(Some(Popup::PromptPassphrase))
             }
             _ => {}
         }
@@ -223,7 +252,9 @@ impl Model {
     fn set_popup(&mut self, new_popup: Option<Popup>) {
         // If ErrorMsg was the previous popup, clear the error message
         match self.current_popup {
-            Some(Popup::ErrorMsg) if new_popup.is_some_and(|v| v != Popup::ErrorMsg) => self.current_error = None,
+            Some(Popup::ErrorMsg) if new_popup.is_some_and(|v| v != Popup::ErrorMsg) => {
+                self.current_error = None
+            }
             _ => {}
         }
 

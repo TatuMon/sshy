@@ -30,5 +30,7 @@ pub enum Message {
     /// Indicates that the given String should be printed in the error popup
     PrintError(String),
     /// Indicates that the given String should be printer in the error popup, and when 
-    FatalError(String)
+    FatalError(String),
+    /// Prompts the user for input
+    PromptNewKeyPassphrase
 }

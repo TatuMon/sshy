@@ -38,6 +38,10 @@ impl CmdWriterEnd {
             .kill()
             .map_err(|e| eyre!("failed to kill child command: {}", e))
     }
+
+    pub fn write(&mut self, content: &[u8]) -> Result<()> {
+        self.writer.write_all(content).map_err(|e| eyre!("failed to write to command: {}", e))
+    }
 }
 
 /// A CmdReaderEnd has a reader to read content from the child command and a message sender to send

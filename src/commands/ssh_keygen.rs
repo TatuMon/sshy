@@ -72,7 +72,7 @@ impl Task for SshKeygenCmd {
             .try_clone_reader()
             .map_err(|e| eyre!("error getting command reader: {}", e))?;
 
-        tokio::spawn(SshKeygenCmd::handle(super::CmdReaderEnd {
+        tokio::spawn(handle_ssh_keygen(super::CmdReaderEnd {
             reader: pty_reader,
             msg_sender: task_msg_tx,
         }));
@@ -93,37 +93,49 @@ impl Task for SshKeygenCmd {
     }
 }
 
-impl SshKeygenCmd {
-    async fn handle(mut reader_end: super::CmdReaderEnd) {
-        let mut buf = [0u8; 1024];
-        loop {
-            match reader_end.reader.read(&mut buf) {
-                Ok(0) => {
-                    // EOF reached
-                    let _ = reader_end
+fn handle_ssh_keygen_output(content: &[u8]) -> Result<Message> {
+    const SET_PASSPHRASE_PROMPT: &[u8] = b"Enter passphrase (empty for no passphrase)";
+    if content
+        .windows(SET_PASSPHRASE_PROMPT.len())
+        .any(|b| b == SET_PASSPHRASE_PROMPT)
+    {
+        return Ok(Message::PromptNewKeyPassphrase);
+    }
+
+    return Ok(Message::Draw);
+}
+
+async fn handle_ssh_keygen(mut reader_end: super::CmdReaderEnd) {
+    let mut buf = [0u8; 1024];
+    loop {
+        match reader_end.reader.read(&mut buf) {
+            Ok(0) => {
+                // EOF reached
+                let _ = reader_end
+                    .msg_sender
+                    .send(Message::CmdFinished)
+                    .expect("failed to terminate child command");
+                break;
+            }
+            Ok(_n) => {
+                let msg = handle_ssh_keygen_output(&buf)
+                    .map_err(|e| eyre!("error handling command output: {}", e));
+                match msg {
+                    Err(e) => reader_end
                         .msg_sender
-                        .send(Message::CmdFinished)
-                        .expect("failed to terminate child command");
-                    break;
+                        .send(Message::PrintError(e.to_string()))
+                        .unwrap(),
+                    Ok(msg) => reader_end.msg_sender.send(msg).unwrap(),
                 }
-                Ok(_n) => {
-                    // TODO
-                    // Send message indicating what to do next
-                    let content = String::from_utf8(buf.to_vec());
-                    println!("{}", content.unwrap());
-                    let _ = reader_end
-                        .msg_sender
-                        .send(Message::PrintError("VAMOOO".to_string()));
+            }
+            Err(e) => {
+                if e.kind() == io::ErrorKind::WouldBlock {
+                    // No data available; optionally sleep or perform other work
+                    continue;
+                } else {
+                    panic!("error reading from PTY: {}", e);
                 }
-                Err(e) => {
-                    if e.kind() == io::ErrorKind::WouldBlock {
-                        // No data available; optionally sleep or perform other work
-                        continue;
-                    } else {
-                        panic!("error reading from PTY: {}", e);
-                    }
-                }
-            };
-        }
+            }
+        };
     }
 }

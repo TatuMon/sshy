@@ -102,12 +102,12 @@ impl EventHandler {
         }
 
         match model.get_focus() {
-            Focus::Section(section) => self.handle_section_key_event(section, key),
-            Focus::Popup(popup) => self.handle_popup_key_event(popup, key, model),
+            Focus::Section(current_section) => self.handle_section_key_event(current_section, key),
+            Focus::Popup(current_popup) => self.handle_popup_key_event(current_popup, key, model),
         }
     }
 
-    fn handle_section_key_event(&self, section: Section, event: KeyEvent) -> Option<Message> {
+    fn handle_section_key_event(&self, current_section: Section, event: KeyEvent) -> Option<Message> {
         match event.code {
             KeyCode::Char('q') => Some(Message::ShowPopup(Popup::ExitPrompt)),
             KeyCode::Char('p') => Some(Message::ShowPopup(Popup::DebugModel)),
@@ -116,7 +116,7 @@ impl EventHandler {
             KeyCode::Up => Some(Message::SelPrevListItem),
             KeyCode::Down => Some(Message::SelNextListItem),
             KeyCode::Char('n') => {
-                if let Section::PublicKeysList = section {
+                if let Section::PublicKeysList = current_section {
                     Some(Message::ShowPopup(Popup::AddPubKey))
                 } else {
                     None
@@ -165,14 +165,25 @@ impl EventHandler {
         }
     }
 
+    fn write_to_cmd(&mut self, cmd_task: commands::CmdTask, content: &[u8]) -> Option<Message> {
+        if let Some(writer_end) = self.cmd_writer_ends.get_mut(&cmd_task) {
+            return match writer_end.write(content) {
+                Err(e) => Some(Message::PrintError(e.to_string())),
+                Ok(_) => Some(Message::Draw)
+            };
+        }
+
+        None
+    }
+
     fn handle_popup_key_event(
         &mut self,
-        popup: Popup,
+        current_popup: Popup,
         key: KeyEvent,
         model: &Model,
     ) -> Option<Message> {
         match key.code {
-            KeyCode::Char(ch) => match popup {
+            KeyCode::Char(ch) => match current_popup {
                 Popup::ExitPrompt => {
                     if ch == 'q' {
                         Some(Message::StopApp)
@@ -180,14 +191,14 @@ impl EventHandler {
                         None
                     }
                 }
-                Popup::AddPubKey if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                Popup::AddPubKey | Popup::PromptPassphrase if key.modifiers.contains(KeyModifiers::CONTROL) => {
                     if ch == 'w' {
                         Some(Message::PopWord)
                     } else {
                         None
                     }
                 }
-                Popup::AddPubKey => Some(Message::WriteChar(ch)),
+                Popup::AddPubKey | Popup::PromptPassphrase => Some(Message::WriteChar(ch)),
                 Popup::WaitingCmd => match model.get_current_command() {
                     None => Some(Message::HidePopup),
                     Some(cmd_task) => Some(self.kill_command(cmd_task)),
@@ -202,10 +213,15 @@ impl EventHandler {
             KeyCode::Tab => Some(Message::SelNextPopupItem),
             KeyCode::BackTab => Some(Message::SelPrevPopupItem),
             KeyCode::Enter => {
-                if let Popup::AddPubKey = popup {
-                    Some(self.start_command(CmdTask::SshKeygen, model))
-                } else {
-                    None
+                match current_popup {
+                    Popup::AddPubKey => Some(self.start_command(CmdTask::SshKeygen, model)),
+                    Popup::PromptPassphrase => {
+                        self.write_to_cmd(
+                            CmdTask::SshKeygen,
+                            &model.get_sections_state().get_public_keys_list_state().get_new_key_state().get_passphrase_bytes()
+                        )
+                    }
+                    _ => None
                 }
             }
             _ => None,
