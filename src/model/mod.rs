@@ -30,6 +30,7 @@ pub struct Model {
     running_state: RunningState,
     /// Don't manually modify it. Use self.set_popup instead.
     current_popup: Option<Popup>,
+    current_section: Section,
     current_focus: Focus,
     previous_focused_section: Focus,
     sections_states: SectionsStates,
@@ -260,20 +261,21 @@ impl Model {
 
         self.current_popup = new_popup;
         if let Some(popup) = new_popup {
-            // self.previous_focused_section = self.current_focus.clone();
             self.current_focus = Focus::Popup(popup);
         } else {
-            self.current_focus = self.previous_focused_section.clone();
+            self.current_focus = Focus::Section(self.current_section.clone());
         }
     }
 
     fn next_section(&mut self) {
         let next_section = self.sections_states.next_section();
+        self.current_section = next_section.clone();
         self.current_focus = Focus::Section(next_section);
     }
 
     fn prev_section(&mut self) {
         let prev_section = self.sections_states.prev_section();
+        self.current_section = prev_section.clone();
         self.current_focus = Focus::Section(prev_section);
     }
 }
