@@ -13,6 +13,7 @@ use ui::draw;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    terminal::init_panic_hook();
     let mut terminal = setup_terminal()?;
 
     let mut model = Model::default();
