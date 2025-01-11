@@ -4,10 +4,13 @@ pub mod exit_prompt;
 pub mod waiting_cmd;
 pub mod error_msg;
 pub mod set_pub_key_passphrase;
+pub mod with_cfg;
 
 use serde::Serialize;
 
-#[derive(Clone, Copy, Serialize, PartialEq, Eq)]
+use crate::ui::color_variants::ColorVariant;
+
+#[derive(Clone, Serialize, PartialEq, Eq)]
 pub enum Popup {
     ExitPrompt,
     AddPubKey,
@@ -15,5 +18,7 @@ pub enum Popup {
     DebugModel,
     WaitingCmd,
     ErrorMsg,
-    PromptPassphrase
+    PromptPassphrase,
+    PromptReenterPassphrase,
+    WithCfg(String, ColorVariant)
 }

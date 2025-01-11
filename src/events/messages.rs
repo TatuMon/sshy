@@ -1,13 +1,12 @@
-use crate::{commands, ui::components::{popups::Popup, sections::Section}};
+use crate::{commands, ui::components::popups::Popup};
 
 /// Messages are events that the model has to react to and update it's
-/// state #[derive(Clone)]
+/// state
 pub enum Message {
     /// Indicates that the app should stop
     StopApp,
     ShowPopup(Popup),
     HidePopup,
-    SetSection(Section),
     /// Triggers a re-draw
     Draw,
     MoveToNextSection,
@@ -29,8 +28,12 @@ pub enum Message {
     CmdFinished,
     /// Indicates that the given String should be printed in the error popup
     PrintError(String),
-    /// Indicates that the given String should be printer in the error popup, and when 
+    /// Indicates that the given String should be printer in the error popup, and when
     FatalError(String),
     /// Prompts the user for input
-    PromptNewKeyPassphrase
+    PromptNewKeyPassphrase,
+    PromptReenterNewKeyPassPhrase,
+    /// Clean from memory the input of passphrase and passphrase check
+    CleanNewKeyPassphraseInput,
+    PromptConfirmation(String),
 }

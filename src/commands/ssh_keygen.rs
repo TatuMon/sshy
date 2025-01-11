@@ -1,9 +1,10 @@
-use std::io;
+use std::{io, path::PathBuf};
 
-use color_eyre::eyre::{eyre, Result};
+use color_eyre::eyre::{eyre, Result, WrapErr};
 
 use crate::events::messages::Message;
 use crate::model::sections_state::public_keys_list_state::NewPublicKeyState;
+use crate::ui::{color_variants::ColorVariant, components::popups::Popup::WithCfg};
 
 use super::Task;
 
@@ -40,11 +41,18 @@ impl Task for SshKeygenCmd {
             comment: new_key.get_comment().into(),
         };
 
+        let home_dir =
+            PathBuf::from(std::env::var("HOME").wrap_err("couldn't find home directory")?)
+                .join(".ssh/")
+                .join(&cmd.filename);
+
+        let home_str = home_dir.as_os_str().to_str().ok_or_else(|| eyre!("invalid home directory"))?;
+
         let args: [&str; 6] = [
             "-t",
             cmd.keytype.into(),
             "-f",
-            &cmd.filename,
+            home_str,
             "-C",
             &cmd.comment,
         ];
@@ -94,15 +102,53 @@ impl Task for SshKeygenCmd {
 }
 
 fn handle_ssh_keygen_output(content: &[u8]) -> Result<Message> {
-    const SET_PASSPHRASE_PROMPT: &[u8] = b"Enter passphrase (empty for no passphrase)";
-    if content
-        .windows(SET_PASSPHRASE_PROMPT.len())
-        .any(|b| b == SET_PASSPHRASE_PROMPT)
-    {
+    let content_string =
+        String::from_utf8(content.to_vec()).wrap_err("failed to read output content")?;
+
+    const SET_PASSPHRASE_PROMPT: &str = "Enter passphrase (empty for no passphrase)";
+    const SET_REENTER_PASS_PROMPT: &str = "Enter same passphrase again";
+    const SUCCESSFUL_KEYGEN: &str = "Your identification has been saved in";
+    const EXISTING_KEY: &str = " already exists";
+    const NO_SUCH_DIR: &str = " No such file or directory";
+
+    let match_pass_prompt = content_string.contains(SET_PASSPHRASE_PROMPT);
+    if match_pass_prompt {
         return Ok(Message::PromptNewKeyPassphrase);
     }
 
-    return Ok(Message::Draw);
+    let match_reenter_pass_prompt = content_string.contains(SET_REENTER_PASS_PROMPT);
+    if match_reenter_pass_prompt {
+        return Ok(Message::PromptReenterNewKeyPassPhrase);
+    }
+
+    let match_successful_keygen = content_string.contains(SUCCESSFUL_KEYGEN);
+    if match_successful_keygen {
+        return Ok(Message::ShowPopup(WithCfg(
+            content_string,
+            ColorVariant::Success,
+        )));
+    }
+
+    let match_key_exists = content_string.contains(EXISTING_KEY);
+    if match_key_exists {
+        return Ok(Message::ShowPopup(WithCfg(
+            content_string,
+            ColorVariant::Warning,
+        )));
+    }
+
+    let match_no_such_dir = content_string.contains(NO_SUCH_DIR);
+    if match_no_such_dir {
+        return Ok(Message::ShowPopup(WithCfg(
+            content_string,
+            ColorVariant::Danger,
+        )));
+    }
+
+    return Ok(Message::ShowPopup(WithCfg(
+        content_string,
+        ColorVariant::Warning,
+    )));
 }
 
 async fn handle_ssh_keygen(mut reader_end: super::CmdReaderEnd) {

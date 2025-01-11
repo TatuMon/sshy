@@ -7,6 +7,7 @@ use crate::{
     commands::{self, CmdTask},
     events::messages::Message,
     ui::{
+        color_variants::ColorVariant,
         components::{popups::Popup, sections::Section},
         Focus,
     },
@@ -47,7 +48,7 @@ pub struct Model {
 
 impl Model {
     pub fn get_popup(&self) -> Option<Popup> {
-        self.current_popup
+        self.current_popup.clone()
     }
 
     /// Returns which view is currently the app focusing on
@@ -98,7 +99,7 @@ impl Model {
                 }
             }
             Message::SelNextPopupItem => {
-                if let Focus::Popup(popup) = self.current_focus {
+                if let Focus::Popup(ref popup) = self.current_focus {
                     match popup {
                         Popup::AddPubKey => {
                             let new_key_state = self
@@ -113,7 +114,7 @@ impl Model {
                 }
             }
             Message::SelPrevPopupItem => {
-                if let Focus::Popup(popup) = self.current_focus {
+                if let Focus::Popup(ref popup) = self.current_focus {
                     match popup {
                         Popup::AddPubKey => {
                             let new_key_state = self
@@ -128,7 +129,7 @@ impl Model {
                 }
             }
             Message::WriteChar(ch) => {
-                if let Focus::Popup(popup) = self.current_focus {
+                if let Focus::Popup(ref popup) = self.current_focus {
                     match popup {
                         Popup::AddPubKey => {
                             let new_key_state = self
@@ -149,13 +150,21 @@ impl Model {
 
                             new_key_state.write_passphrase(ch);
                         }
+                        Popup::PromptReenterPassphrase => {
+                            let new_key_state = self
+                                .sections_states
+                                .get_public_keys_list_state_mut()
+                                .get_new_key_state_mut();
+
+                            new_key_state.write_passphrase_check(ch);
+                        }
                         Popup::ExitPrompt => {}
                         _ => {}
                     }
                 }
             }
             Message::PopChar => {
-                if let Focus::Popup(popup) = self.current_focus {
+                if let Focus::Popup(ref popup) = self.current_focus {
                     match popup {
                         Popup::AddPubKey => {
                             let new_key_state = self
@@ -176,13 +185,21 @@ impl Model {
 
                             new_key_state.del_passphare_char();
                         }
+                        Popup::PromptReenterPassphrase => {
+                            let new_key_state = self
+                                .sections_states
+                                .get_public_keys_list_state_mut()
+                                .get_new_key_state_mut();
+
+                            new_key_state.del_passphrase_check_char();
+                        }
                         Popup::ExitPrompt => {}
                         _ => {}
                     }
                 }
             }
             Message::PopWord => {
-                if let Focus::Popup(popup) = self.current_focus {
+                if let Focus::Popup(ref popup) = self.current_focus {
                     match popup {
                         Popup::AddPubKey => {
                             let new_key_state = self
@@ -203,6 +220,14 @@ impl Model {
 
                             new_key_state.del_passphrase();
                         }
+                        Popup::PromptReenterPassphrase => {
+                            let new_key_state = self
+                                .sections_states
+                                .get_public_keys_list_state_mut()
+                                .get_new_key_state_mut();
+
+                            new_key_state.del_passphrase_check();
+                        }
                         Popup::ExitPrompt => {}
                         _ => {}
                     }
@@ -222,8 +247,22 @@ impl Model {
                 self.current_error = Some(error_str);
                 self.set_popup(Some(Popup::ErrorMsg));
             }
-            Message::PromptNewKeyPassphrase => {
-                self.set_popup(Some(Popup::PromptPassphrase))
+            Message::FatalError(error_str) => {
+                self.fatal_error = Some(error_str.clone());
+                self.set_popup(Some(Popup::WithCfg(
+                    error_str.clone(),
+                    ColorVariant::Danger,
+                )));
+            }
+            Message::PromptNewKeyPassphrase => self.set_popup(Some(Popup::PromptPassphrase)),
+            Message::PromptReenterNewKeyPassPhrase => {
+                self.set_popup(Some(Popup::PromptReenterPassphrase))
+            }
+            Message::CleanNewKeyPassphraseInput => {
+                self.sections_states
+                    .get_public_keys_list_state_mut()
+                    .get_new_key_state_mut()
+                    .clean_passphrases();
             }
             _ => {}
         }
@@ -251,20 +290,19 @@ impl Model {
 
     /// Setting a popup should also set the current section
     fn set_popup(&mut self, new_popup: Option<Popup>) {
-        // If ErrorMsg was the previous popup, clear the error message
         match self.current_popup {
-            Some(Popup::ErrorMsg) if new_popup.is_some_and(|v| v != Popup::ErrorMsg) => {
+            Some(Popup::ErrorMsg) if new_popup.clone().is_some_and(|v| v != Popup::ErrorMsg) => {
                 self.current_error = None
             }
             _ => {}
         }
 
-        self.current_popup = new_popup;
-        if let Some(popup) = new_popup {
-            self.current_focus = Focus::Popup(popup);
+        if let Some(ref popup) = new_popup {
+            self.current_focus = Focus::Popup(popup.clone());
         } else {
             self.current_focus = Focus::Section(self.current_section.clone());
         }
+        self.current_popup = new_popup;
     }
 
     fn next_section(&mut self) {

@@ -6,17 +6,23 @@ use ratatui::{
 };
 
 use crate::{
-    model::{sections_state::public_keys_list_state::NewPublicKeyFocus, Model},
+    model::Model,
     ui::ui_utils::{centered_rect_px, popups, text_input},
 };
 
-pub fn draw_set_pub_key_passphrase(f: &mut Frame, model: &Model) {
+pub fn draw_set_pub_key_passphrase(f: &mut Frame, model: &Model, reenter: bool) {
     let new_key_state = model
         .get_sections_state()
         .get_public_keys_list_state()
         .get_new_key_state();
 
-    let popup_block = popups::basic_popup_block("Enter passphrase (empty for no passphrase)")
+    let block_content = if !reenter {
+        "Enter passphrase (empty for no passphrase)"
+    } else {
+        "Enter same passphrase again"
+    };
+
+    let popup_block = popups::basic_popup_block(block_content)
         .title_bottom(Line::from("Press ⏎ to confirm").right_aligned());
 
     let f_area = f.size();
@@ -25,11 +31,13 @@ pub fn draw_set_pub_key_passphrase(f: &mut Frame, model: &Model) {
     f.render_widget(Clear, area);
     f.render_widget(popup_block, area);
 
-    draw_passphrase_input(
-        f,
-        area,
-        new_key_state.get_passphrase_len(),
-    );
+    let passphrase_len = if !reenter {
+        new_key_state.get_passphrase_len()
+    } else {
+        new_key_state.get_passphrase_check_len()
+    };
+
+    draw_passphrase_input(f, area, passphrase_len);
 }
 
 fn draw_passphrase_input(f: &mut Frame, popup_area: Rect, passphrase_len: usize) {

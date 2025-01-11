@@ -53,14 +53,14 @@ impl EventHandler {
         let mut queue = VecDeque::new();
 
         if let Some(event) = self.poll_crossterm_event()? {
-            let crossterm_event_msg = match event {
+            let crossterm_event_msgs = match event {
                 Event::Key(key_event) => self.handle_key_event(key_event, model),
-                Event::Resize(_, _) => Some(Message::Draw),
+                Event::Resize(_, _) => vec!(Message::Draw),
                 // Event::Mouse(mouse_event) => Ok(handle_mouse_event(mouse_event)),
-                _ => None,
+                _ => vec!(),
             };
 
-            if let Some(msg) = crossterm_event_msg {
+            for msg in crossterm_event_msgs {
                 queue.push_back(msg);
             }
         };
@@ -96,9 +96,9 @@ impl EventHandler {
     /// separate function
     ///
     /// Matching the code first, makes it impossible to write to an input
-    fn handle_key_event(&mut self, key: KeyEvent, model: &Model) -> Option<Message> {
+    fn handle_key_event(&mut self, key: KeyEvent, model: &Model) -> Vec<Message> {
         if let Some(_) = model.get_fatal_error() {
-            return Some(Message::StopApp);
+            return vec!(Message::StopApp);
         }
 
         match model.get_focus() {
@@ -107,22 +107,22 @@ impl EventHandler {
         }
     }
 
-    fn handle_section_key_event(&self, current_section: Section, event: KeyEvent) -> Option<Message> {
+    fn handle_section_key_event(&self, current_section: Section, event: KeyEvent) -> Vec<Message> {
         match event.code {
-            KeyCode::Char('q') => Some(Message::ShowPopup(Popup::ExitPrompt)),
-            KeyCode::Char('p') => Some(Message::ShowPopup(Popup::DebugModel)),
-            KeyCode::Right => Some(Message::MoveToNextSection),
-            KeyCode::Left => Some(Message::MoveToPrevSection),
-            KeyCode::Up => Some(Message::SelPrevListItem),
-            KeyCode::Down => Some(Message::SelNextListItem),
+            KeyCode::Char('q') => vec!(Message::ShowPopup(Popup::ExitPrompt)),
+            KeyCode::Char('p') => vec!(Message::ShowPopup(Popup::DebugModel)),
+            KeyCode::Right => vec!(Message::MoveToNextSection),
+            KeyCode::Left => vec!(Message::MoveToPrevSection),
+            KeyCode::Up => vec!(Message::SelPrevListItem),
+            KeyCode::Down => vec!(Message::SelNextListItem),
             KeyCode::Char('n') => {
                 if let Section::PublicKeysList = current_section {
-                    Some(Message::ShowPopup(Popup::AddPubKey))
+                    vec!(Message::ShowPopup(Popup::AddPubKey))
                 } else {
-                    None
+                    vec!()
                 }
             }
-            _ => None,
+            _ => vec!(),
         }
     }
 
@@ -169,7 +169,7 @@ impl EventHandler {
         if let Some(writer_end) = self.cmd_writer_ends.get_mut(&cmd_task) {
             return match writer_end.write(content) {
                 Err(e) => Some(Message::PrintError(e.to_string())),
-                Ok(_) => Some(Message::Draw)
+                Ok(_) => None
             };
         }
 
@@ -181,50 +181,68 @@ impl EventHandler {
         current_popup: Popup,
         key: KeyEvent,
         model: &Model,
-    ) -> Option<Message> {
+    ) -> Vec<Message> {
         match key.code {
             KeyCode::Char(ch) => match current_popup {
                 Popup::ExitPrompt => {
                     if ch == 'q' {
-                        Some(Message::StopApp)
+                        vec!(Message::StopApp)
                     } else {
-                        None
+                        vec!()
                     }
                 }
                 Popup::AddPubKey | Popup::PromptPassphrase if key.modifiers.contains(KeyModifiers::CONTROL) => {
                     if ch == 'w' {
-                        Some(Message::PopWord)
+                        vec!(Message::PopWord)
                     } else {
-                        None
+                        vec!()
                     }
                 }
-                Popup::AddPubKey | Popup::PromptPassphrase => Some(Message::WriteChar(ch)),
+                Popup::AddPubKey | Popup::PromptPassphrase | Popup::PromptReenterPassphrase => vec!(Message::WriteChar(ch)),
                 Popup::WaitingCmd => match model.get_current_command() {
-                    None => Some(Message::HidePopup),
-                    Some(cmd_task) => Some(self.kill_command(cmd_task)),
+                    None => vec!(Message::HidePopup),
+                    Some(cmd_task) => vec!(self.kill_command(cmd_task)),
                 },
-                _ => None,
+                _ => vec!(),
             },
-            KeyCode::Backspace => Some(Message::PopChar),
+            KeyCode::Backspace => vec!(Message::PopChar),
             KeyCode::Esc => match model.get_current_command() {
-                None => Some(Message::HidePopup),
-                Some(cmd_task) => Some(self.kill_command(cmd_task)),
+                None => vec!(Message::HidePopup),
+                Some(cmd_task) => vec!(self.kill_command(cmd_task)),
             },
-            KeyCode::Tab => Some(Message::SelNextPopupItem),
-            KeyCode::BackTab => Some(Message::SelPrevPopupItem),
+            KeyCode::Tab => vec!(Message::SelNextPopupItem),
+            KeyCode::BackTab => vec!(Message::SelPrevPopupItem),
             KeyCode::Enter => {
                 match current_popup {
-                    Popup::AddPubKey => Some(self.start_command(CmdTask::SshKeygen, model)),
+                    Popup::AddPubKey => vec!(self.start_command(CmdTask::SshKeygen, model)),
                     Popup::PromptPassphrase => {
-                        self.write_to_cmd(
+                        if let Some(msg) = self.write_to_cmd(
                             CmdTask::SshKeygen,
                             &model.get_sections_state().get_public_keys_list_state().get_new_key_state().get_passphrase_bytes()
-                        )
+                        ) {
+                            vec!(msg)
+                        } else {
+                            vec!()
+                        }
                     }
-                    _ => None
+                    Popup::PromptReenterPassphrase => {
+                        let mut msgs: Vec<Message> = vec!();
+
+                        if let Some(msg) = self.write_to_cmd(
+                            CmdTask::SshKeygen,
+                            &model.get_sections_state().get_public_keys_list_state().get_new_key_state().get_passphrase_check_bytes()
+                        ) {
+                            msgs.push(msg);
+                        };
+
+                        // msgs.push(Message::CleanNewKeyPassphraseInput);
+
+                        msgs
+                    }
+                    _ => vec!()
                 }
             }
-            _ => None,
+            _ => vec!(),
         }
     }
 }

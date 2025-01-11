@@ -7,6 +7,7 @@ use std::sync::mpsc;
 use color_eyre::eyre::{eyre, Result};
 
 use crate::events::messages::Message;
+use crate::utils::constants;
 
 use std::collections::HashMap;
 
@@ -40,7 +41,18 @@ impl CmdWriterEnd {
     }
 
     pub fn write(&mut self, content: &[u8]) -> Result<()> {
-        self.writer.write_all(content).map_err(|e| eyre!("failed to write to command: {}", e))
+        let content_with_newline: Vec<u8> = content
+            .iter()
+            .copied()
+            .chain(constants::LINE_TERMINATOR.to_owned())
+            .collect();
+
+        self.writer
+            .write_all(&content_with_newline)
+            .map_err(|e| eyre!("failed to write to command: {}", e))?;
+        self.writer
+            .flush()
+            .map_err(|e| eyre!("failed to send data to command: {}", e))
     }
 }
 

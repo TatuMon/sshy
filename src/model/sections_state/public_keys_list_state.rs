@@ -15,19 +15,13 @@ pub enum NewPublicKeyFocus {
     // KeyType For now, only ED25519 is available
 }
 
-#[derive(Clone, Copy)]
-enum Prompting {
-    Filename,
-    Passphrase,
-}
-
 pub struct NewPublicKeyState {
     name: String,
     key_type: PublicKeyType,
     comment: String,
     current_focus: NewPublicKeyFocus,
-    prompting: Option<Prompting>,
     passphrase: Option<String>,
+    passphrase_check: Option<String>
 }
 
 impl Default for NewPublicKeyState {
@@ -39,8 +33,8 @@ impl Default for NewPublicKeyState {
             key_type: def_keytype,
             comment: String::default(),
             current_focus: NewPublicKeyFocus::Name,
-            prompting: None,
             passphrase: None,
+            passphrase_check: None
         }
     }
 }
@@ -136,6 +130,45 @@ impl NewPublicKeyState {
 
     pub fn del_passphrase(&mut self) {
         self.passphrase = None;
+    }
+
+    pub fn write_passphrase_check(&mut self, ch: char) {
+        match &mut self.passphrase_check {
+            None => self.passphrase_check = Some(String::from(ch)),
+            Some(pass) => pass.push(ch),
+        }
+    }
+
+    pub fn del_passphrase_check_char(&mut self) {
+        match &mut self.passphrase_check {
+            Some(pass) => {
+                pass.pop();
+            }
+            _ => {}
+        }
+    }
+
+    pub fn del_passphrase_check(&mut self) {
+        self.passphrase_check = None;
+    }
+
+    pub fn get_passphrase_check_bytes(&self) -> Vec<u8> {
+        match &self.passphrase_check {
+            None => vec!(),
+            Some(pass) => pass.clone().as_bytes().to_vec()
+        }
+    }
+
+    pub fn get_passphrase_check_len(&self) -> usize {
+        match &self.passphrase_check {
+            None => 0,
+            Some(pass) => pass.len()
+        }
+    }
+
+    pub fn clean_passphrases(&mut self) {
+        self.passphrase = None;
+        self.passphrase_check = None;
     }
 }
 
