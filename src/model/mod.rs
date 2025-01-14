@@ -229,8 +229,7 @@ impl Model {
                             new_key_state.del_passphrase_check();
                         }
                         Popup::ExitPrompt => {}
-                        _ => {}
-                    }
+                        _ => {} }
                 }
             }
             Message::CmdSpawned(cmd_task) => match cmd_task {
@@ -263,6 +262,9 @@ impl Model {
                     .get_public_keys_list_state_mut()
                     .get_new_key_state_mut()
                     .clean_passphrases();
+            }
+            Message::ReloadPublicKeysList => {
+                self.sections_states.get_public_keys_list_state_mut().load_public_keys();
             }
             _ => {}
         }

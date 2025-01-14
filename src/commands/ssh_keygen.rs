@@ -4,7 +4,7 @@ use color_eyre::eyre::{eyre, Result, WrapErr};
 
 use crate::events::messages::Message;
 use crate::model::sections_state::public_keys_list_state::NewPublicKeyState;
-use crate::ui::{color_variants::ColorVariant, components::popups::Popup::WithCfg};
+use crate::ui::{color_variants::ColorVariant, components::{popups::Popup::WithCfg, sections::Section}};
 
 use super::Task;
 
@@ -101,7 +101,7 @@ impl Task for SshKeygenCmd {
     }
 }
 
-fn handle_ssh_keygen_output(content: &[u8]) -> Result<Message> {
+fn handle_ssh_keygen_output(content: &[u8]) -> Result<Vec<Message>> {
     let content_string =
         String::from_utf8(content.to_vec()).wrap_err("failed to read output content")?;
 
@@ -113,42 +113,45 @@ fn handle_ssh_keygen_output(content: &[u8]) -> Result<Message> {
 
     let match_pass_prompt = content_string.contains(SET_PASSPHRASE_PROMPT);
     if match_pass_prompt {
-        return Ok(Message::PromptNewKeyPassphrase);
+        return Ok(vec!(Message::PromptNewKeyPassphrase));
     }
 
     let match_reenter_pass_prompt = content_string.contains(SET_REENTER_PASS_PROMPT);
     if match_reenter_pass_prompt {
-        return Ok(Message::PromptReenterNewKeyPassPhrase);
+        return Ok(vec!(Message::PromptReenterNewKeyPassPhrase));
     }
 
     let match_successful_keygen = content_string.contains(SUCCESSFUL_KEYGEN);
     if match_successful_keygen {
-        return Ok(Message::ShowPopup(WithCfg(
+        let succ_popup_msg = Message::ShowPopup(WithCfg(
             content_string,
             ColorVariant::Success,
-        )));
+        ));
+        let reload_keys_msg = Message::ReloadPublicKeysList;
+        return Ok(vec!(succ_popup_msg, reload_keys_msg));
     }
 
     let match_key_exists = content_string.contains(EXISTING_KEY);
     if match_key_exists {
-        return Ok(Message::ShowPopup(WithCfg(
+        return Ok(vec!(Message::ShowPopup(WithCfg(
             content_string,
             ColorVariant::Warning,
-        )));
+        ))));
     }
 
     let match_no_such_dir = content_string.contains(NO_SUCH_DIR);
     if match_no_such_dir {
-        return Ok(Message::ShowPopup(WithCfg(
+        return Ok(vec!(Message::ShowPopup(WithCfg(
             content_string,
             ColorVariant::Danger,
-        )));
+        ))));
     }
 
-    return Ok(Message::ShowPopup(WithCfg(
-        content_string,
-        ColorVariant::Warning,
-    )));
+    // return Ok(Message::ShowPopup(WithCfg(
+    //     content_string,
+    //     ColorVariant::Warning,
+    // )));
+    return Ok(vec!(Message::Draw))
 }
 
 async fn handle_ssh_keygen(mut reader_end: super::CmdReaderEnd) {
@@ -164,14 +167,14 @@ async fn handle_ssh_keygen(mut reader_end: super::CmdReaderEnd) {
                 break;
             }
             Ok(_n) => {
-                let msg = handle_ssh_keygen_output(&buf)
+                let msgs = handle_ssh_keygen_output(&buf)
                     .map_err(|e| eyre!("error handling command output: {}", e));
-                match msg {
+                match msgs {
                     Err(e) => reader_end
                         .msg_sender
                         .send(Message::PrintError(e.to_string()))
                         .unwrap(),
-                    Ok(msg) => reader_end.msg_sender.send(msg).unwrap(),
+                    Ok(msgs) => msgs.into_iter().for_each(|msg| reader_end.msg_sender.send(msg).unwrap()),
                 }
             }
             Err(e) => {

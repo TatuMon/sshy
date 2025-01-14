@@ -7,7 +7,7 @@ pub enum Message {
     StopApp,
     ShowPopup(Popup),
     HidePopup,
-    /// Triggers a re-draw
+    /// Triggers a re-draw of the entire screen
     Draw,
     MoveToNextSection,
     MoveToPrevSection,
@@ -33,7 +33,6 @@ pub enum Message {
     /// Prompts the user for input
     PromptNewKeyPassphrase,
     PromptReenterNewKeyPassPhrase,
-    /// Clean from memory the input of passphrase and passphrase check
     CleanNewKeyPassphraseInput,
-    PromptConfirmation(String),
+    ReloadPublicKeysList
 }
