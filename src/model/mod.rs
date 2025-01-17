@@ -266,6 +266,9 @@ impl Model {
             Message::ReloadPublicKeysList => {
                 self.sections_states.get_public_keys_list_state_mut().load_public_keys();
             }
+            Message::PromptKeyOverwrite => {
+                self.set_popup(Some(Popup::PromptKeyOverwrite));
+            }
             _ => {}
         }
     }

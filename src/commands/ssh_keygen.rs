@@ -133,10 +133,7 @@ fn handle_ssh_keygen_output(content: &[u8]) -> Result<Vec<Message>> {
 
     let match_key_exists = content_string.contains(EXISTING_KEY);
     if match_key_exists {
-        return Ok(vec!(Message::ShowPopup(WithCfg(
-            content_string,
-            ColorVariant::Warning,
-        ))));
+        return Ok(vec!(Message::PromptKeyOverwrite));
     }
 
     let match_no_such_dir = content_string.contains(NO_SUCH_DIR);

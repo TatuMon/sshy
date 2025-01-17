@@ -33,6 +33,7 @@ pub enum Message {
     /// Prompts the user for input
     PromptNewKeyPassphrase,
     PromptReenterNewKeyPassPhrase,
+    PromptKeyOverwrite,
     CleanNewKeyPassphraseInput,
-    ReloadPublicKeysList
+    ReloadPublicKeysList,
 }

@@ -10,7 +10,7 @@ use serde::Serialize;
 use crate::{model::Model, terminal::SshyTerminal};
 
 use self::components::{
-    popups::{add_pub_key, debug_model, exit_prompt, error_msg, set_pub_key_passphrase, with_cfg, Popup},
+    popups::{add_pub_key, debug_model, exit_prompt, error_msg, set_pub_key_passphrase, with_cfg, prompt_key_overwrite, Popup},
     sections::{known_hosts_list, public_keys_list, Section},
 };
 
@@ -45,6 +45,7 @@ pub fn draw(terminal: &mut SshyTerminal, model: &Model) -> Result<()> {
                     Popup::ErrorMsg => error_msg::draw_error_msg(f, model),
                     Popup::PromptPassphrase => set_pub_key_passphrase::draw_set_pub_key_passphrase(f, model, false),
                     Popup::PromptReenterPassphrase => set_pub_key_passphrase::draw_set_pub_key_passphrase(f, model, true),
+                    Popup::PromptKeyOverwrite => prompt_key_overwrite::draw_prompt_key_overwrite(f, model),
                     Popup::WithCfg(content, variant) => with_cfg::draw_popup_with_cfg(f, content, variant)
                 }
             }

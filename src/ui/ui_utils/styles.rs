@@ -12,6 +12,10 @@ pub fn fg_danger() -> Style {
     Style::new().fg(Color::Red)
 }
 
+pub fn fg_warning() -> Style {
+    Style::new().fg(Color::Yellow)
+}
+
 /// Creates a Style that set the foreground's color to blue, indicating that the
 /// target is loading
 pub fn loading_border() -> Style {

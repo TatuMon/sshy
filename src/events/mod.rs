@@ -234,8 +234,19 @@ impl EventHandler {
                         ) {
                             msgs.push(msg);
                         };
+                        msgs.push(Message::CleanNewKeyPassphraseInput);
 
-                        // msgs.push(Message::CleanNewKeyPassphraseInput);
+                        msgs
+                    }
+                    Popup::PromptKeyOverwrite => {
+                        let mut msgs: Vec<Message> = vec!();
+
+                        if let Some(msg) = self.write_to_cmd(
+                            CmdTask::SshKeygen,
+                            "y".as_bytes()
+                        ) {
+                            msgs.push(msg);
+                        };
 
                         msgs
                     }

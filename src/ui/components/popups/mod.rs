@@ -5,6 +5,7 @@ pub mod waiting_cmd;
 pub mod error_msg;
 pub mod set_pub_key_passphrase;
 pub mod with_cfg;
+pub mod prompt_key_overwrite;
 
 use serde::Serialize;
 
@@ -20,5 +21,6 @@ pub enum Popup {
     ErrorMsg,
     PromptPassphrase,
     PromptReenterPassphrase,
+    PromptKeyOverwrite,
     WithCfg(String, ColorVariant)
 }
