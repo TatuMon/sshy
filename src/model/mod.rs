@@ -263,11 +263,14 @@ impl Model {
                     .get_new_key_state_mut()
                     .clean_passphrases();
             }
-            Message::ReloadPublicKeysList => {
+            Message::RefreshPublicKeysList => {
                 self.sections_states.get_public_keys_list_state_mut().load_public_keys();
             }
             Message::PromptKeyOverwrite => {
                 self.set_popup(Some(Popup::PromptKeyOverwrite));
+            }
+            Message::PromptDeleteKeyPairConfirmation => {
+                self.set_popup(Some(Popup::PromptDeleteKeyPairConfirmation));
             }
             _ => {}
         }

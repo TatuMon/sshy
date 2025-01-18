@@ -1,5 +1,5 @@
 use std::{
-    fs::File,
+    fs::{self, File},
     io::{self, BufRead, BufReader},
     path::PathBuf,
 };
@@ -67,4 +67,30 @@ fn get_file_hostnames(known_hosts_file: &File) -> Vec<String> {
     }
 
     known_hosts
+}
+
+pub fn get_user_ssh_dir() -> Result<PathBuf> {
+    let path = PathBuf::from(std::env::var("HOME").wrap_err("couldn't find home directory")?)
+        .join(".ssh/");
+
+    Ok(path)
+}
+
+pub fn delete_key_pair(private_key_name: &str) -> Result<()> {
+    let ssh_dir = get_user_ssh_dir()?;
+
+    let private_key_path = ssh_dir.clone().join(private_key_name);
+
+    let public_key_name = format!("{}.pub", private_key_name);
+    let public_key_path = ssh_dir.join(public_key_name.clone());
+
+    if private_key_path.exists() {
+        fs::remove_file(private_key_path).wrap_err(format!("failed to remove private key '{}'", private_key_name.to_owned()))?;
+    }
+    if public_key_path.exists() {
+        fs::remove_file(public_key_path).wrap_err(format!("failed to remove public key '{}'", public_key_name))?;
+    }
+
+
+    return Ok(())
 }

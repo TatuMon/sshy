@@ -4,6 +4,7 @@ mod model;
 mod terminal;
 mod ui;
 mod utils;
+mod async_jobs;
 
 use color_eyre::eyre::Result;
 use events::EventHandler;
