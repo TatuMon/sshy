@@ -5,7 +5,9 @@ use ratatui::{
     Frame,
 };
 
-use crate::{ui::ui_utils::styles, model::sections_state::known_hosts_list_state::KnownHostsListState};
+use crate::{
+    model::sections_state::known_hosts_list_state::KnownHostsListState, ui::ui_utils::styles,
+};
 
 pub fn draw(f: &mut Frame, section_state: &KnownHostsListState) {
     let mut block = Block::default()

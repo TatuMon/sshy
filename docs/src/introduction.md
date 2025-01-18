@@ -2,7 +2,7 @@
 
 [WORK IN PROGRESS]  
 **sshy** is a terminal user interface (TUI) application made to help you manage
-your ssh connections. As any GUI app, it enables you to tweak your server and
+your ssh connections. It allow you to tweak your server and
 client configuration, generate key pairs and connect to an ssh server without
 leaving the app
 

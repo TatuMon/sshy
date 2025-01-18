@@ -1,14 +1,17 @@
 use std::{
     fs::File,
-    io::{self, BufRead, BufReader}, path::PathBuf,
+    io::{self, BufRead, BufReader},
+    path::PathBuf,
 };
 
 use color_eyre::eyre::{Context, Result};
 
 pub fn get_known_hosts() -> Result<Vec<String>> {
-    let mut known_hosts: Vec<String> = vec!();
+    let mut known_hosts: Vec<String> = vec![];
 
-    let user_known_hosts_filename = dirs::home_dir().unwrap_or_default().join(".ssh/known_hosts");
+    let user_known_hosts_filename = dirs::home_dir()
+        .unwrap_or_default()
+        .join(".ssh/known_hosts");
     if user_known_hosts_filename.exists() {
         let user_file = File::open(user_known_hosts_filename).wrap_err("error reading file")?;
         known_hosts.append(&mut get_file_hostnames(&user_file));
@@ -24,7 +27,7 @@ pub fn get_known_hosts() -> Result<Vec<String>> {
 }
 
 pub fn get_public_keys_names() -> Result<Vec<String>> {
-    let mut pub_keys_names: Vec<String> = vec!();
+    let mut pub_keys_names: Vec<String> = vec![];
     let ssh_dir = dirs::home_dir().unwrap_or_default().join(".ssh/");
 
     if ssh_dir.exists() && ssh_dir.is_dir() {
@@ -35,7 +38,7 @@ pub fn get_public_keys_names() -> Result<Vec<String>> {
                     pub_keys_names.push(entry_name)
                 }
             } else {
-                continue
+                continue;
             }
         }
     }
@@ -49,7 +52,7 @@ fn get_file_lines(file: &File) -> io::Lines<BufReader<&File>> {
 }
 
 fn get_file_hostnames(known_hosts_file: &File) -> Vec<String> {
-    let mut known_hosts: Vec<String> = vec!();
+    let mut known_hosts: Vec<String> = vec![];
 
     for line in get_file_lines(known_hosts_file) {
         if let Ok(line) = line {
@@ -59,10 +62,9 @@ fn get_file_hostnames(known_hosts_file: &File) -> Vec<String> {
                 }
             }
         } else {
-            continue
+            continue;
         }
     }
 
     known_hosts
 }
-

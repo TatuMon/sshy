@@ -1,4 +1,7 @@
-use std::io::{self, Stdout};
+use std::{
+    io::{self, stdout, Stdout},
+    panic::{set_hook, take_hook},
+};
 
 use color_eyre::eyre::{Context, Result};
 use crossterm::{
@@ -22,4 +25,18 @@ pub fn end_terminal(mut terminal: Terminal<CrosstermBackend<Stdout>>) -> Result<
     disable_raw_mode()?;
     execute!(terminal.backend_mut(), LeaveAlternateScreen)
         .wrap_err("Error shutting down the terminal instance")
+}
+
+fn restore_tui() -> io::Result<()> {
+    disable_raw_mode()?;
+    execute!(stdout(), LeaveAlternateScreen)?;
+    Ok(())
+}
+
+pub fn init_panic_hook() {
+    let original_hook = take_hook();
+    set_hook(Box::new(move |panic_info| {
+        let _ = restore_tui();
+        original_hook(panic_info);
+    }))
 }
