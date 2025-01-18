@@ -1,6 +1,6 @@
+pub mod color_variants;
 pub mod components;
 pub mod ui_utils;
-pub mod color_variants;
 pub mod widgets;
 
 use color_eyre::eyre::{Context, Result};
@@ -10,13 +10,17 @@ use serde::Serialize;
 use crate::{model::Model, terminal::SshyTerminal};
 
 use self::components::{
-    popups::{add_pub_key, debug_model, exit_prompt, error_msg, set_pub_key_passphrase, with_cfg, prompt_key_overwrite, Popup},
+    popups::{
+        add_pub_key, debug_model, error_msg, exit_prompt, prompt_delete_key_pair_confirmation,
+        prompt_key_overwrite, set_pub_key_passphrase, with_cfg, Popup,
+    },
     sections::{known_hosts_list, public_keys_list, Section},
 };
 
 #[derive(Clone, Serialize)]
 pub enum Focus {
-    Popup(Popup), Section(Section),
+    Popup(Popup),
+    Section(Section),
 }
 
 impl Default for Focus {
@@ -43,10 +47,22 @@ pub fn draw(terminal: &mut SshyTerminal, model: &Model) -> Result<()> {
                     Popup::AddPubKey => add_pub_key::draw_add_pub_key_popup(f, model),
                     Popup::WaitingCmd => waiting_cmd::draw_waiting_cmd(f, model),
                     Popup::ErrorMsg => error_msg::draw_error_msg(f, model),
-                    Popup::PromptPassphrase => set_pub_key_passphrase::draw_set_pub_key_passphrase(f, model, false),
-                    Popup::PromptReenterPassphrase => set_pub_key_passphrase::draw_set_pub_key_passphrase(f, model, true),
-                    Popup::PromptKeyOverwrite => prompt_key_overwrite::draw_prompt_key_overwrite(f, model),
-                    Popup::WithCfg(content, variant) => with_cfg::draw_popup_with_cfg(f, content, variant)
+                    Popup::PromptPassphrase => {
+                        set_pub_key_passphrase::draw_set_pub_key_passphrase(f, model, false)
+                    }
+                    Popup::PromptReenterPassphrase => {
+                        set_pub_key_passphrase::draw_set_pub_key_passphrase(f, model, true)
+                    }
+                    Popup::PromptKeyOverwrite => {
+                        prompt_key_overwrite::draw_prompt_key_overwrite(f, model)
+                    }
+                    Popup::WithCfg(content, variant) => {
+                        with_cfg::draw_popup_with_cfg(f, content, variant)
+                    }
+                    Popup::PromptDeleteKeyPairConfirmation => {
+                        // Should I change the name? Maybe. Too long.
+                        prompt_delete_key_pair_confirmation::draw_prompt_delete_key_pair_confirmation(f, model)
+                    },
                 }
             }
         })
