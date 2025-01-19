@@ -1,12 +1,11 @@
-use std::{io, path::PathBuf};
+use std::io;
 
 use color_eyre::eyre::{eyre, Result, WrapErr};
 
 use crate::events::messages::Message;
 use crate::model::sections_state::public_keys_list_state::NewPublicKeyState;
 use crate::ui::{color_variants::ColorVariant, components::popups::Popup::WithCfg};
-
-use super::Task;
+use crate::utils;
 
 #[derive(Clone, Copy, Default)]
 pub enum PublicKeyType {
@@ -28,10 +27,10 @@ pub struct SshKeygenCmd {
     comment: String,
 }
 
-impl Task for SshKeygenCmd {
+impl SshKeygenCmd {
     /// Starts the ssh-keygen command, creating a detached green-thread in charge
     /// of handling the messaging between the the command and the app.
-    fn start(
+    pub fn start(
         new_key: &NewPublicKeyState,
         task_msg_tx: super::TaskMessageTx,
     ) -> Result<super::CmdWriterEnd> {
@@ -41,10 +40,7 @@ impl Task for SshKeygenCmd {
             comment: new_key.get_comment().into(),
         };
 
-        let home_dir =
-            PathBuf::from(std::env::var("HOME").wrap_err("couldn't find home directory")?)
-                .join(".ssh/")
-                .join(&cmd.filename);
+        let home_dir = utils::files::get_user_ssh_dir()?.join(&cmd.filename);
 
         let home_str = home_dir.as_os_str().to_str().ok_or_else(|| eyre!("invalid home directory"))?;
 

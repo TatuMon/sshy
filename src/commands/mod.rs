@@ -1,6 +1,5 @@
 pub mod ssh_keygen;
 
-use crate::model::sections_state::public_keys_list_state::NewPublicKeyState;
 use portable_pty::ChildKiller;
 use std::sync::mpsc;
 
@@ -67,8 +66,3 @@ pub struct CmdReaderEnd {
 }
 
 pub type CmdWriterEnds = HashMap<CmdTask, CmdWriterEnd>;
-
-pub trait Task {
-    fn start(new_key_input: &NewPublicKeyState, task_msg_tx: TaskMessageTx)
-        -> Result<CmdWriterEnd>;
-}

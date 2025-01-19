@@ -1,8 +1,10 @@
 use serde::Serialize;
+use std::path::PathBuf;
+use color_eyre::Result;
 
 use crate::{
     commands::ssh_keygen::PublicKeyType,
-    utils::{self, strings},
+    utils::{self, strings, files},
 };
 
 type ListItems = Vec<String>;
@@ -170,6 +172,14 @@ impl NewPublicKeyState {
         self.passphrase = None;
         self.passphrase_check = None;
     }
+
+    pub fn validate_name(&self) -> Result<(), String> {
+        if self.name == "config" {
+            return Err(String::from("the name 'config' is reserved to the config file"));
+        }
+
+        return Ok(())
+    }
 }
 
 pub struct PublicKeysListState {
@@ -207,6 +217,22 @@ impl PublicKeysListState {
 
     pub fn get_selected_item_idx(&self) -> Option<usize> {
         self.selected_item_idx
+    }
+
+    pub fn get_selected_key_name(&self) -> Option<String> {
+        let public_key_name = match self.get_selected_item_idx() {
+            Some(idx) => self.items.get(idx),
+            None => None
+        };
+
+        // I want only the key name, a.k.a the file stem of the public key
+        match public_key_name {
+            None => None,
+            Some(public_key_name) => {
+                let pub_key_pathbuf = PathBuf::from(public_key_name);
+                pub_key_pathbuf.file_stem().map(|s| s.to_string_lossy().into_owned())
+            }
+        }
     }
 
     pub fn next_item(&mut self) {
