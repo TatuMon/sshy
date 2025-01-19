@@ -4,7 +4,7 @@ use color_eyre::eyre::{eyre, Result, WrapErr};
 
 use crate::events::messages::Message;
 use crate::model::sections_state::public_keys_list_state::NewPublicKeyState;
-use crate::ui::{color_variants::ColorVariant, components::{popups::Popup::WithCfg, sections::Section}};
+use crate::ui::{color_variants::ColorVariant, components::popups::Popup::WithCfg};
 
 use super::Task;
 
@@ -127,7 +127,7 @@ fn handle_ssh_keygen_output(content: &[u8]) -> Result<Vec<Message>> {
             content_string,
             ColorVariant::Success,
         ));
-        let reload_keys_msg = Message::ReloadPublicKeysList;
+        let reload_keys_msg = Message::RefreshPublicKeysList;
         return Ok(vec!(succ_popup_msg, reload_keys_msg));
     }
 

@@ -263,11 +263,14 @@ impl Model {
                     .get_new_key_state_mut()
                     .clean_passphrases();
             }
-            Message::ReloadPublicKeysList => {
+            Message::RefreshPublicKeysList => {
                 self.sections_states.get_public_keys_list_state_mut().load_public_keys();
             }
             Message::PromptKeyOverwrite => {
                 self.set_popup(Some(Popup::PromptKeyOverwrite));
+            }
+            Message::RefreshKnownHostsList => {
+                self.sections_states.get_known_hosts_list_state_mut().load_known_hosts();
             }
             _ => {}
         }

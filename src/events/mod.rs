@@ -122,6 +122,12 @@ impl EventHandler {
                     vec!()
                 }
             }
+            KeyCode::Char('R') => {
+                match current_section {
+                    Section::PublicKeysList => vec!(Message::RefreshPublicKeysList),
+                    Section::KnownHostsList => vec!(Message::RefreshKnownHostsList)
+                }
+            }
             _ => vec!(),
         }
     }
