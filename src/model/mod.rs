@@ -271,6 +271,7 @@ impl Model {
             }
             Message::RefreshKnownHostsList => {
                 self.sections_states.get_known_hosts_list_state_mut().load_known_hosts();
+            }
             Message::PromptDeleteKeyPairConfirmation => {
                 self.set_popup(Some(Popup::PromptDeleteKeyPairConfirmation));
             }

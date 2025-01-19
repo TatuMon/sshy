@@ -123,13 +123,10 @@ impl EventHandler {
                     vec![]
                 }
             }
-            KeyCode::Char('R') => {
-                match current_section {
-                    Section::PublicKeysList => vec!(Message::RefreshPublicKeysList),
-                    Section::KnownHostsList => vec!(Message::RefreshKnownHostsList)
-                }
-            }
-            _ => vec!(),
+            KeyCode::Char('R') => match current_section {
+                Section::PublicKeysList => vec![Message::RefreshPublicKeysList],
+                Section::KnownHostsList => vec![Message::RefreshKnownHostsList],
+            },
             KeyCode::Char('d') => {
                 if let Section::PublicKeysList = current_section {
                     vec![Message::PromptDeleteKeyPairConfirmation]
@@ -150,7 +147,11 @@ impl EventHandler {
     fn start_command(&mut self, cmd_task: commands::CmdTask, model: &Model) -> Message {
         let msg_tx_cp = self.task_msg_tx.clone();
 
-        let name_validation = model.get_sections_state().get_public_keys_list_state().get_new_key_state().validate_name();
+        let name_validation = model
+            .get_sections_state()
+            .get_public_keys_list_state()
+            .get_new_key_state()
+            .validate_name();
         if let Err(validation_err) = name_validation {
             return Message::PrintError(validation_err);
         }
@@ -295,11 +296,11 @@ impl EventHandler {
                 }
                 Popup::PromptDeleteKeyPairConfirmation => {
                     self.run_async_job(AsyncJob::DeleteKayPair, model);
-                    vec!()
+                    vec![]
                 }
-                _ => vec!(),
+                _ => vec![],
             },
-            _ => vec!(),
+            _ => vec![],
         }
     }
 }
