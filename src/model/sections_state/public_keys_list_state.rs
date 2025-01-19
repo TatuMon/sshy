@@ -170,6 +170,14 @@ impl NewPublicKeyState {
         self.passphrase = None;
         self.passphrase_check = None;
     }
+
+    pub fn validate_name(&self) -> Result<(), String> {
+        if self.name == "config" {
+            return Err(String::from("the name 'config' is reserved to the config file"));
+        }
+
+        return Ok(())
+    }
 }
 
 pub struct PublicKeysListState {
