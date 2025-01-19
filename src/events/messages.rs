@@ -36,5 +36,6 @@ pub enum Message {
     PromptKeyOverwrite,
     CleanNewKeyPassphraseInput,
     RefreshPublicKeysList,
-    PromptDeleteKeyPairConfirmation,
+    RefreshKnownHostsList,
+    PromptDeleteKeyPairConfirmation
 }
