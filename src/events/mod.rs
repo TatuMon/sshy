@@ -143,6 +143,11 @@ impl EventHandler {
     fn start_command(&mut self, cmd_task: commands::CmdTask, model: &Model) -> Message {
         let msg_tx_cp = self.task_msg_tx.clone();
 
+        let name_validation = model.get_sections_state().get_public_keys_list_state().get_new_key_state().validate_name();
+        if let Err(validation_err) = name_validation {
+            return Message::PrintError(validation_err);
+        }
+
         match cmd_task {
             CmdTask::SshKeygen => {
                 let cmd_startup = SshKeygenCmd::start(
