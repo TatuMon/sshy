@@ -1,6 +1,0 @@
-[book]
-authors = ["Juan Cruz Montiel"]
-language = "en"
-multilingual = false
-src = "src"
-title = "sshy"
