@@ -26,6 +26,8 @@ pub enum Message {
     CmdSpawned(commands::CmdTask),
     /// Indicates that the currently running command has finished
     CmdFinished,
+    /// Indicates that the given String should be printed in the success popup
+    PrintSuccess(String),
     /// Indicates that the given String should be printed in the error popup
     PrintError(String),
     /// Indicates that the given String should be printer in the error popup, and when
@@ -37,5 +39,6 @@ pub enum Message {
     CleanNewKeyPassphraseInput,
     RefreshPublicKeysList,
     RefreshKnownHostsList,
-    PromptDeleteKeyPairConfirmation
+    PromptDeleteKeyPairConfirmation,
+    PubKeyCopyToClipboard
 }

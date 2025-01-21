@@ -103,12 +103,12 @@ impl EventHandler {
         }
 
         match model.get_focus() {
-            Focus::Section(current_section) => self.handle_section_key_event(current_section, key),
+            Focus::Section(current_section) => self.handle_section_key_event(current_section, key, model),
             Focus::Popup(current_popup) => self.handle_popup_key_event(current_popup, key, model),
         }
     }
 
-    fn handle_section_key_event(&self, current_section: Section, event: KeyEvent) -> Vec<Message> {
+    fn handle_section_key_event(&mut self, current_section: Section, event: KeyEvent, model: &Model) -> Vec<Message> {
         match event.code {
             KeyCode::Char('q') => vec![Message::ShowPopup(Popup::ExitPrompt)],
             KeyCode::Char('p') => vec![Message::ShowPopup(Popup::DebugModel)],
@@ -133,6 +133,18 @@ impl EventHandler {
                 } else {
                     vec![]
                 }
+            }
+            KeyCode::Char('c') => {
+                let mut msgs: Vec<Message> = vec![];
+
+                if let Section::PublicKeysList = current_section {
+                    if let Err(err) = self.run_async_job(AsyncJob::CopyToClipboard, model) {
+                        msgs.push(Message::PrintError(err.to_string()));
+                    }
+                } else {
+                }
+
+                msgs
             }
             _ => vec![],
         }
@@ -197,7 +209,7 @@ impl EventHandler {
         None
     }
 
-    fn run_async_job(&mut self, async_job: AsyncJob, model: &Model) {
+    fn run_async_job(&mut self, async_job: AsyncJob, model: &Model) -> Result<()> {
         let msg_tx = self.task_msg_tx.clone();
 
         match async_job {
@@ -206,8 +218,17 @@ impl EventHandler {
                     .get_sections_state()
                     .get_public_keys_list_state()
                     .get_selected_key_name()
-                    .expect("must select a key to delete");
+                    .expect("Must select a key to delete");
                 async_jobs::delete_key_pair::delete_key_pair(key_name, msg_tx);
+                Ok(())
+            }
+            AsyncJob::CopyToClipboard => {
+                let key_name = model
+                    .get_sections_state()
+                    .get_public_keys_list_state()
+                    .get_selected_key_content()?;
+                async_jobs::copy_to_clipboard::copy_to_clipboard(key_name, msg_tx);
+                Ok(())
             }
         }
     }
@@ -295,8 +316,11 @@ impl EventHandler {
                     msgs
                 }
                 Popup::PromptDeleteKeyPairConfirmation => {
-                    self.run_async_job(AsyncJob::DeleteKayPair, model);
-                    vec![]
+                    if let Err(err) = self.run_async_job(AsyncJob::DeleteKayPair, model) {
+                        vec![Message::PrintError(err.to_string())]
+                    } else {
+                        vec![]
+                    }
                 }
                 _ => vec![],
             },
