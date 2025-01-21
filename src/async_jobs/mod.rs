@@ -1,5 +1,2 @@
 pub mod delete_key_pair;
-
-pub enum AsyncJob {
-    DeleteKayPair
-}
+pub mod copy_to_clipboard;

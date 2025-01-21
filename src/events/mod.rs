@@ -10,7 +10,7 @@ use color_eyre::eyre::{Context, Result};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 
 use crate::{
-    async_jobs::{self, AsyncJob},
+    async_jobs,
     commands::{self, ssh_keygen::SshKeygenCmd, CmdTask},
     model::Model,
     ui::{
@@ -103,12 +103,19 @@ impl EventHandler {
         }
 
         match model.get_focus() {
-            Focus::Section(current_section) => self.handle_section_key_event(current_section, key),
+            Focus::Section(current_section) => {
+                self.handle_section_key_event(current_section, key, model)
+            }
             Focus::Popup(current_popup) => self.handle_popup_key_event(current_popup, key, model),
         }
     }
 
-    fn handle_section_key_event(&self, current_section: Section, event: KeyEvent) -> Vec<Message> {
+    fn handle_section_key_event(
+        &mut self,
+        current_section: Section,
+        event: KeyEvent,
+        model: &Model,
+    ) -> Vec<Message> {
         match event.code {
             KeyCode::Char('q') => vec![Message::ShowPopup(Popup::ExitPrompt)],
             KeyCode::Char('p') => vec![Message::ShowPopup(Popup::DebugModel)],
@@ -134,8 +141,33 @@ impl EventHandler {
                     vec![]
                 }
             }
+            KeyCode::Char('c') => {
+                self.copy_pub_key_to_clipboard(model);
+                vec![]
+            }
             _ => vec![],
         }
+    }
+
+    fn copy_pub_key_to_clipboard(&self, model: &Model) {
+        let key_name = model
+            .get_sections_state()
+            .get_public_keys_list_state()
+            .get_selected_key_content()
+            .expect("Must select a key first");
+        async_jobs::copy_to_clipboard::copy_to_clipboard(key_name, self.task_msg_tx.clone());
+    }
+
+    fn delete_key_pair(&self, model: &Model) {
+        let key_name = model
+            .get_sections_state()
+            .get_public_keys_list_state()
+            .get_selected_key_name()
+            .expect("Must select a key to delete");
+        async_jobs::delete_key_pair::delete_key_pair(
+            key_name,
+            self.task_msg_tx.clone()
+        );
     }
 
     /// Starts the given command task
@@ -195,21 +227,6 @@ impl EventHandler {
         }
 
         None
-    }
-
-    fn run_async_job(&mut self, async_job: AsyncJob, model: &Model) {
-        let msg_tx = self.task_msg_tx.clone();
-
-        match async_job {
-            AsyncJob::DeleteKayPair => {
-                let key_name = model
-                    .get_sections_state()
-                    .get_public_keys_list_state()
-                    .get_selected_key_name()
-                    .expect("must select a key to delete");
-                async_jobs::delete_key_pair::delete_key_pair(key_name, msg_tx);
-            }
-        }
     }
 
     fn handle_popup_key_event(
@@ -295,7 +312,7 @@ impl EventHandler {
                     msgs
                 }
                 Popup::PromptDeleteKeyPairConfirmation => {
-                    self.run_async_job(AsyncJob::DeleteKayPair, model);
+                    self.delete_key_pair(model);
                     vec![]
                 }
                 _ => vec![],

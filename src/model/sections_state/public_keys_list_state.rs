@@ -1,10 +1,10 @@
+use color_eyre::{Result, eyre::eyre};
 use serde::Serialize;
 use std::path::PathBuf;
-use color_eyre::Result;
 
 use crate::{
     commands::ssh_keygen::PublicKeyType,
-    utils::{self, strings, files},
+    utils::{self, files, strings},
 };
 
 type ListItems = Vec<String>;
@@ -16,14 +16,13 @@ pub enum NewPublicKeyFocus {
     Comment,
     // KeyType For now, only ED25519 is available
 }
-
 pub struct NewPublicKeyState {
     name: String,
     key_type: PublicKeyType,
     comment: String,
     current_focus: NewPublicKeyFocus,
     passphrase: Option<String>,
-    passphrase_check: Option<String>
+    passphrase_check: Option<String>,
 }
 
 impl Default for NewPublicKeyState {
@@ -36,7 +35,7 @@ impl Default for NewPublicKeyState {
             comment: String::default(),
             current_focus: NewPublicKeyFocus::Name,
             passphrase: None,
-            passphrase_check: None
+            passphrase_check: None,
         }
     }
 }
@@ -57,14 +56,14 @@ impl NewPublicKeyState {
     pub fn get_passphrase_len(&self) -> usize {
         match &self.passphrase {
             None => 0,
-            Some(pass) => pass.len()
+            Some(pass) => pass.len(),
         }
     }
 
     pub fn get_passphrase_bytes(&self) -> Vec<u8> {
         match &self.passphrase {
-            None => vec!(),
-            Some(pass) => pass.clone().as_bytes().to_vec()
+            None => vec![],
+            Some(pass) => pass.clone().as_bytes().to_vec(),
         }
     }
 
@@ -156,15 +155,15 @@ impl NewPublicKeyState {
 
     pub fn get_passphrase_check_bytes(&self) -> Vec<u8> {
         match &self.passphrase_check {
-            None => vec!(),
-            Some(pass) => pass.clone().as_bytes().to_vec()
+            None => vec![],
+            Some(pass) => pass.clone().as_bytes().to_vec(),
         }
     }
 
     pub fn get_passphrase_check_len(&self) -> usize {
         match &self.passphrase_check {
             None => 0,
-            Some(pass) => pass.len()
+            Some(pass) => pass.len(),
         }
     }
 
@@ -175,10 +174,12 @@ impl NewPublicKeyState {
 
     pub fn validate_name(&self) -> Result<(), String> {
         if self.name == "config" {
-            return Err(String::from("the name 'config' is reserved to the config file"));
+            return Err(String::from(
+                "the name 'config' is reserved to the config file",
+            ));
         }
 
-        return Ok(())
+        return Ok(());
     }
 }
 
@@ -222,7 +223,7 @@ impl PublicKeysListState {
     pub fn get_selected_key_name(&self) -> Option<String> {
         let public_key_name = match self.get_selected_item_idx() {
             Some(idx) => self.items.get(idx),
-            None => None
+            None => None,
         };
 
         // I want only the key name, a.k.a the file stem of the public key
@@ -230,9 +231,24 @@ impl PublicKeysListState {
             None => None,
             Some(public_key_name) => {
                 let pub_key_pathbuf = PathBuf::from(public_key_name);
-                pub_key_pathbuf.file_stem().map(|s| s.to_string_lossy().into_owned())
+                pub_key_pathbuf
+                    .file_stem()
+                    .map(|s| s.to_string_lossy().into_owned())
             }
         }
+    }
+
+    pub fn get_selected_key_content(&self) -> Result<String> {
+        let public_key_name = match self.get_selected_item_idx() {
+            Some(idx) => self.items.get(idx),
+            None => None,
+        };
+        let public_key_name = public_key_name.ok_or(
+            eyre!(
+                "An error ocurred while trying to read the key name. Use R to refresh the list and try again."
+        ))?;
+
+        files::get_pub_key_content(public_key_name)        
     }
 
     pub fn next_item(&mut self) {
@@ -294,6 +310,6 @@ impl Serialize for PublicKeysListState {
     where
         S: serde::Serializer,
     {
-        serializer.serialize_str("serializer not implemented")
+        serializer.serialize_str("Serializer not implemented")
     }
 }

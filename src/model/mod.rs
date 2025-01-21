@@ -242,6 +242,9 @@ impl Model {
                 self.current_commands.clear();
                 self.set_popup(None);
             }
+            Message::PrintSuccess(success_str) => {
+                self.set_popup(Some(Popup::WithCfg(success_str, ColorVariant::Success)));
+            }
             Message::PrintError(error_str) => {
                 self.current_error = Some(error_str);
                 self.set_popup(Some(Popup::ErrorMsg));
