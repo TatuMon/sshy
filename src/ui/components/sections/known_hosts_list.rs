@@ -41,6 +41,6 @@ fn get_area(frame_rect: Rect) -> Rect {
 
     Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Percentage(33), Constraint::Percentage(33)])
+        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
         .split(column)[0]
 }
