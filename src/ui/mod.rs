@@ -12,7 +12,7 @@ use crate::{model::Model, terminal::SshyTerminal};
 use self::components::{
     popups::{
         add_pub_key, debug_model, error_msg, exit_prompt, prompt_delete_key_pair_confirmation,
-        prompt_key_overwrite, set_pub_key_passphrase, with_cfg, Popup,
+        prompt_key_overwrite, set_pub_key_passphrase, with_cfg, show_pub_key_content, Popup,
     },
     sections::{known_hosts_list, public_keys_list, Section},
 };
@@ -63,6 +63,9 @@ pub fn draw(terminal: &mut SshyTerminal, model: &Model) -> Result<()> {
                         // Should I change the name? Maybe. Too long.
                         prompt_delete_key_pair_confirmation::draw_prompt_delete_key_pair_confirmation(f, model)
                     },
+                    Popup::ShowPubKeyContent => {
+                        show_pub_key_content::draw_pub_key_content(f, model)
+                    }
                 }
             }
         })

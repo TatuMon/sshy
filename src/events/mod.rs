@@ -145,6 +145,9 @@ impl EventHandler {
                 self.copy_pub_key_to_clipboard(model);
                 vec![]
             }
+            KeyCode::Enter => {
+                vec![Message::ShowPopup(Popup::ShowPubKeyContent)]
+            }
             _ => vec![],
         }
     }

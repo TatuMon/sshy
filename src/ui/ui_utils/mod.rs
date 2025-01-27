@@ -110,3 +110,16 @@ pub fn centered_rect_for_paragraph(
         .constraints(horiz_constraints)
         .split(popup_layout[1])[1] // Return the middle chunk
 }
+
+/// Returns how many pixels are horizontally present within the specified percentage of the given
+/// area
+pub fn width_percentage_to_px(area: Rect, percentage: u16) -> usize {
+    Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([Constraint::Percentage(percentage)])
+        .split(area)
+        .first()
+        .map(|r| r.to_owned())
+        .unwrap_or(area)
+        .width as usize
+}

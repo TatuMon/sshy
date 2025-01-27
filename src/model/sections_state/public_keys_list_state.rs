@@ -238,6 +238,17 @@ impl PublicKeysListState {
         }
     }
 
+    pub fn get_selected_key_path(&self) -> Option<PathBuf> {
+        let public_key_name = match self.get_selected_item_idx() {
+            Some(idx) => self.items.get(idx),
+            None => None,
+        };
+
+        let ssh_dir = files::get_user_ssh_dir().unwrap_or(PathBuf::new());
+
+        public_key_name.map(|n| ssh_dir.join(n))
+    }
+
     pub fn get_selected_key_content(&self) -> Result<String> {
         let public_key_name = match self.get_selected_item_idx() {
             Some(idx) => self.items.get(idx),

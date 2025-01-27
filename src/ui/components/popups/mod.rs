@@ -7,6 +7,7 @@ pub mod set_pub_key_passphrase;
 pub mod with_cfg;
 pub mod prompt_key_overwrite;
 pub mod prompt_delete_key_pair_confirmation;
+pub mod show_pub_key_content;
 
 use serde::Serialize;
 
@@ -25,4 +26,5 @@ pub enum Popup {
     PromptKeyOverwrite,
     WithCfg(String, ColorVariant),
     PromptDeleteKeyPairConfirmation,
+    ShowPubKeyContent
 }
