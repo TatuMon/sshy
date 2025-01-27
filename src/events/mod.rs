@@ -119,10 +119,10 @@ impl EventHandler {
         match event.code {
             KeyCode::Char('q') => vec![Message::ShowPopup(Popup::ExitPrompt)],
             KeyCode::Char('p') => vec![Message::ShowPopup(Popup::DebugModel)],
-            KeyCode::Right => vec![Message::MoveToNextSection],
-            KeyCode::Left => vec![Message::MoveToPrevSection],
-            KeyCode::Up => vec![Message::SelPrevListItem],
-            KeyCode::Down => vec![Message::SelNextListItem],
+            KeyCode::Right | KeyCode::Char('l') => vec![Message::MoveToNextSection],
+            KeyCode::Left | KeyCode::Char('h') => vec![Message::MoveToPrevSection],
+            KeyCode::Up | KeyCode::Char('k') => vec![Message::SelPrevListItem],
+            KeyCode::Down | KeyCode::Char('j') => vec![Message::SelNextListItem],
             KeyCode::Char('n') => {
                 if let Section::PublicKeysList = current_section {
                     vec![Message::ShowPopup(Popup::AddPubKey)]
