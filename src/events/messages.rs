@@ -40,6 +40,4 @@ pub enum Message {
     RefreshPublicKeysList,
     RefreshKnownHostsList,
     PromptDeleteKeyPairConfirmation,
-    DeleteKeyPair,
-    PubKeyCopyToClipboard,
 }
