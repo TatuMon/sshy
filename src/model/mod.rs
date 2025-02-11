@@ -81,6 +81,7 @@ impl Model {
                             .sections_states
                             .get_public_keys_list_state_mut()
                             .next_item(),
+                        Section::ClientConfig => {}
                     }
                 }
             }
@@ -95,6 +96,7 @@ impl Model {
                             .sections_states
                             .get_public_keys_list_state_mut()
                             .prev_item(),
+                        Section::ClientConfig => {}
                     }
                 }
             }

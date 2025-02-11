@@ -133,6 +133,7 @@ impl EventHandler {
             KeyCode::Char('R') => match current_section {
                 Section::PublicKeysList => vec![Message::RefreshPublicKeysList],
                 Section::KnownHostsList => vec![Message::RefreshKnownHostsList],
+                Section::ClientConfig => vec![]
             },
             KeyCode::Char('d') => {
                 if let Section::PublicKeysList = current_section {

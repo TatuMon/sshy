@@ -112,3 +112,10 @@ pub fn get_pub_key_content(key_name: &str) -> Result<String> {
 
     fs::read_to_string(key_path).wrap_err("Failed to read public key content")
 }
+
+pub fn get_client_config_content() -> Result<String> {
+    let ssh_dir = get_user_ssh_dir()?;
+    let config_file_path = ssh_dir.join("config");
+
+    fs::read_to_string(config_file_path).wrap_err("Failed to read client config file")
+}

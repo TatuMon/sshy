@@ -14,7 +14,7 @@ use self::components::{
         add_pub_key, debug_model, error_msg, exit_prompt, prompt_delete_key_pair_confirmation,
         prompt_key_overwrite, set_pub_key_passphrase, with_cfg, show_pub_key_content, Popup,
     },
-    sections::{known_hosts_list, public_keys_list, Section},
+    sections::{known_hosts_list, public_keys_list, client_config, Section},
 };
 
 #[derive(Clone, Serialize)]
@@ -39,6 +39,7 @@ pub fn draw(terminal: &mut SshyTerminal, model: &Model) -> Result<()> {
             // We first draw the sections
             known_hosts_list::draw(f, model.get_sections_state().get_known_hosts_list_state());
             public_keys_list::draw(f, model.get_sections_state().get_public_keys_list_state());
+            client_config::draw(f, model.get_sections_state().get_client_config_state());
             // And then the current popup (if any)
             if let Some(popup) = model.get_popup() {
                 match popup {
