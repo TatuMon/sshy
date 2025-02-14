@@ -26,7 +26,7 @@ pub fn draw(f: &mut Frame, section_state: &PublicKeysListState) {
         .highlight_style(styles::highlighted_item())
         .block(block);
 
-    let area = get_area(f.size());
+    let area = get_area(f.area());
     let mut list_state = ListState::default();
     list_state.select(section_state.get_selected_item_idx());
 

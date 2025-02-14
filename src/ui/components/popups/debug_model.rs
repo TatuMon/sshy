@@ -16,7 +16,7 @@ pub fn draw_debug_model_popup(f: &mut Frame, model: &Model) {
 
     let paragraph = Paragraph::new(model_json).block(block);
 
-    let area = centered_rect(50, 50, f.size());
+    let area = centered_rect(50, 50, f.area());
 
     f.render_widget(Clear, area);
     f.render_widget(paragraph, area);

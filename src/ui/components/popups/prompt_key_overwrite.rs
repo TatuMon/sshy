@@ -22,7 +22,7 @@ pub fn draw_prompt_key_overwrite(f: &mut Frame, model: &Model) {
     let paragraph_content = format!("The key '{}' already exists. Overwrite?", new_key_name);
     let paragraph = Paragraph::new(paragraph_content).block(popup_block);
 
-    let area = centered_rect_for_paragraph(&paragraph, 50, 50, f.size());
+    let area = centered_rect_for_paragraph(&paragraph, 50, 50, f.area());
 
     f.render_widget(Clear, area);
     f.render_widget(paragraph, area);
