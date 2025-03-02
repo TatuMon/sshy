@@ -1,7 +1,8 @@
 pub mod sections_state;
+pub mod vim_emulator;
 
 use sections_state::public_keys_list_state::NewPublicKeyFocus;
-use serde::Serialize;
+use vim_emulator::{VimMode, VimState};
 
 use crate::{
     commands::{self, CmdTask},
@@ -15,7 +16,7 @@ use crate::{
 
 use self::sections_state::SectionsStates;
 
-#[derive(Default, Clone, PartialEq, Serialize)]
+#[derive(Default, Clone, PartialEq)]
 pub enum RunningState {
     #[default]
     Running,
@@ -26,7 +27,7 @@ pub enum RunningState {
 ///
 /// Changes made to this struct MUST be issued using the 'update' method, which
 /// updates the state based on the given Message
-#[derive(Default, Serialize)]
+#[derive(Default)]
 pub struct Model {
     running_state: RunningState,
     /// Don't manually modify it. Use self.set_popup instead.
@@ -44,6 +45,13 @@ pub struct Model {
     fatal_error: Option<String>,
     /// The error message that should be displayed in the error popup
     current_error: Option<String>,
+    /// State of the Vim emulator.
+    ///
+    /// - If interactive mode is on for a textarea, user input should affect this vim state machine.
+    /// - If there's no need to have a vim state (e.g. after exiting interactive mode), this should be None
+    /// - Interactive mode is considered "on" when the focused section says so. E.g.: ClientConfigState indicates
+    /// this via the function "is_interactive_on"
+    vim_state: Option<VimState>,
 }
 
 impl Model {
@@ -231,7 +239,8 @@ impl Model {
                             new_key_state.del_passphrase_check();
                         }
                         Popup::ExitPrompt => {}
-                        _ => {} }
+                        _ => {}
+                    }
                 }
             }
             Message::CmdSpawned(cmd_task) => match cmd_task {
@@ -269,16 +278,29 @@ impl Model {
                     .clean_passphrases();
             }
             Message::RefreshPublicKeysList => {
-                self.sections_states.get_public_keys_list_state_mut().load_public_keys();
+                self.sections_states
+                    .get_public_keys_list_state_mut()
+                    .load_public_keys();
             }
             Message::PromptKeyOverwrite => {
                 self.set_popup(Some(Popup::PromptKeyOverwrite));
             }
             Message::RefreshKnownHostsList => {
-                self.sections_states.get_known_hosts_list_state_mut().load_known_hosts();
+                self.sections_states
+                    .get_known_hosts_list_state_mut()
+                    .load_known_hosts();
             }
             Message::PromptDeleteKeyPairConfirmation => {
                 self.set_popup(Some(Popup::PromptDeleteKeyPairConfirmation));
+            }
+            Message::TextAreaInteract => {
+                self.vim_state = Some(VimState::new(VimMode::Normal));
+                self.sections_states
+                    .get_client_config_state_mut()
+                    .enter_interactive();
+            }
+            Message::VimQuit => {
+
             }
             _ => {}
         }
@@ -302,6 +324,10 @@ impl Model {
 
     pub fn get_current_error(&self) -> Option<String> {
         self.current_error.clone()
+    }
+
+    pub fn get_vim_state(&self) -> Option<&VimState> {
+        self.vim_state.as_ref()
     }
 
     /// Setting a popup should also set the current section

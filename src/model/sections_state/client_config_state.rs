@@ -1,30 +1,23 @@
-use std::borrow::Cow;
 use serde::Serialize;
 
-use crate::utils;
-
-type ListItems = Vec<String>;
+use crate::utils::{self, types::textarea_state::TextAreaState};
 
 #[derive(Clone)]
 pub struct ClientConfigState {
-    content: Option<String>,
+    textarea_state: TextAreaState,
     has_focus: bool,
-    /// Indicates if the user entered "modifying" state
-    is_modifying: bool
+    /// Indicates if the user entered interactive mode
+    interactive_on: bool,
 }
 
 impl ClientConfigState {
-    /// Returns the content. Being an empty string in case self.content is None
-    pub fn get_content(&self) -> Cow<String> {
-        match &self.content {
-            None => Cow::Owned(String::new()),
-            Some(content) => Cow::Borrowed(content)
-        }
-    }
-
     pub fn load_content(&mut self) {
         let config_content = utils::files::get_client_config_content().unwrap_or(String::from("FAILED TO LOAD"));
-        self.content = Some(config_content);
+        self.textarea_state.set_content(config_content);
+    }
+
+    pub fn get_textarea_state(&self) -> &TextAreaState {
+        &self.textarea_state
     }
 
     pub fn focus(&mut self) {
@@ -39,21 +32,26 @@ impl ClientConfigState {
         self.has_focus
     }
 
-    pub fn is_user_modifying(&self) -> bool {
-        self.is_modifying
+    /// Indicates if the user is on interactive mode
+    pub fn is_interactive_on(&self) -> bool {
+        self.interactive_on
+    }
+
+    /// Enters interactive mode
+    pub fn enter_interactive(&mut self) {
+        self.interactive_on = true;
     }
 }
 
 impl Default for ClientConfigState {
     fn default() -> Self {
         let mut state = Self {
-            content: None,
+            textarea_state: TextAreaState::new(),
             has_focus: false,
-            is_modifying: false
+            interactive_on: false
         };
 
         state.load_content();
-
         state
     }
 }

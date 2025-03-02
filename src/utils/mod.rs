@@ -3,3 +3,4 @@ pub mod files;
 pub mod math;
 pub mod strings;
 pub mod constants;
+pub mod types;
