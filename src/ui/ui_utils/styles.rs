@@ -21,3 +21,11 @@ pub fn fg_warning() -> Style {
 pub fn loading_border() -> Style {
     Style::new().fg(Color::Blue)
 }
+
+pub fn textarea_border(is_user_interacting: bool) -> Style {
+    if is_user_interacting {
+        Style::new().fg(Color::LightRed)
+    } else {
+        focused_border()
+    }
+}

@@ -21,14 +21,16 @@ pub fn draw<'a>(f: &mut Frame, section_state: &'a ClientConfigState) {
         .border_type(BorderType::Rounded)
         .style(Style::default());
 
-    if !section_state.is_interactive_on() {
+    let is_user_interacting = section_state.is_interactive_on();
+
+    if !is_user_interacting {
         block = block.title(Line::from("Press ⏎ to enter interactive mode").right_aligned());
     } else {
         block = block.title(Line::from("Press q to enter interactive mode").right_aligned());
     }
 
     if section_state.has_focus() {
-        block = block.border_style(styles::focused_border());
+        block = block.border_style(styles::textarea_border(is_user_interacting));
     }
 
     let textarea_state = section_state.get_textarea_state();
