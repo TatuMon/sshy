@@ -3,6 +3,7 @@ use tui_textarea::{CursorMove, Scrolling, Input};
 
 /// Messages are events that the model has to react to and update it's
 /// state
+#[derive(Debug)]
 pub enum Message {
     /// Indicates that the app should stop
     StopApp,

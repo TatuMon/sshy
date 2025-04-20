@@ -10,7 +10,7 @@ pub mod show_pub_key_content;
 
 use crate::ui::color_variants::ColorVariant;
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub enum Popup {
     ExitPrompt,
     AddPubKey,
