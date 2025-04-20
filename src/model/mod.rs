@@ -299,9 +299,10 @@ impl Model {
                     .get_client_config_state_mut()
                     .enter_interactive();
             }
-            Message::VimQuit => {
-
-            }
+            Message::VimQuit => self
+                .sections_states
+                .get_client_config_state_mut()
+                .quit_interactive(),
             _ => {}
         }
     }

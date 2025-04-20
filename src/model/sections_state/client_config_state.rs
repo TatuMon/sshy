@@ -41,6 +41,10 @@ impl ClientConfigState {
     pub fn enter_interactive(&mut self) {
         self.interactive_on = true;
     }
+
+    pub fn quit_interactive(&mut self) {
+        self.interactive_on = false;
+    }
 }
 
 impl Default for ClientConfigState {

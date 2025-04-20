@@ -21,8 +21,10 @@ pub fn draw<'a>(f: &mut Frame, section_state: &'a ClientConfigState) {
         .border_type(BorderType::Rounded)
         .style(Style::default());
 
-    if section_state.is_interactive_on() {
-        block = block.title(Line::from("Press ⏎ to enter interactive mode"));
+    if !section_state.is_interactive_on() {
+        block = block.title(Line::from("Press ⏎ to enter interactive mode").right_aligned());
+    } else {
+        block = block.title(Line::from("Press q to enter interactive mode").right_aligned());
     }
 
     if section_state.has_focus() {

@@ -33,7 +33,7 @@ pub fn handle_key_input(input: Input, vim_state: &VimState) -> Message {
 
     let vim_mode = vim_state.get_mode();
 
-    match vim_mode {
+    return match vim_mode {
         VimMode::Normal | VimMode::Visual | VimMode::Operator(_) => {
             match input {
                 Input {
