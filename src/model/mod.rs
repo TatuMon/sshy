@@ -299,10 +299,16 @@ impl Model {
                     .get_client_config_state_mut()
                     .enter_interactive();
             }
-            Message::VimQuit => self
-                .sections_states
-                .get_client_config_state_mut()
-                .quit_interactive(),
+            Message::VimQuit => {
+                self.sections_states
+                    .get_client_config_state_mut()
+                    .quit_interactive();
+            }
+            Message::TextAreaMoveCursor(cursor_move) => {
+                self.sections_states
+                    .get_client_config_state_mut()
+                    .move_cursor(cursor_move);
+            }
             _ => {}
         }
     }
