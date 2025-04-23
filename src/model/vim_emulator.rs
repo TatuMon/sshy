@@ -52,16 +52,26 @@ impl fmt::Display for VimMode {
 }
 
 // State of Vim emulation
+#[derive(Clone)]
 pub struct VimState {
     mode: VimMode,
     pending: Input, // Pending input to handle a sequence with two keys like gg
+}
+
+impl Default for VimState {
+    fn default() -> Self {
+        Self {
+            mode: VimMode::Normal,
+            pending: Input::default() // Null
+        }
+    }
 }
 
 impl VimState {
     pub fn new(mode: VimMode) -> Self {
         Self {
             mode,
-            pending: Input::default(),
+            pending: Input::default(), // Null
         }
     }
 
@@ -71,6 +81,10 @@ impl VimState {
 
     pub fn get_pending_input(&self) -> Input {
         self.pending.clone()
+    }
+
+    pub fn set_mode(&mut self, mode: VimMode) {
+        self.mode = mode;
     }
 
     fn with_pending(self, pending: Input) -> Self {

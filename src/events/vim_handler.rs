@@ -162,7 +162,7 @@ pub fn handle_key_input(input: Input, vim_state: &VimState) -> Message {
                     key: Key::Char('v'),
                     ctrl: false,
                     ..
-                } => Message::TextAreaStartSelection,
+                } => Message::SetVimMode(VimMode::Visual),
                 Input {
                     key: Key::Char('V'),
                     ctrl: false,
@@ -173,7 +173,7 @@ pub fn handle_key_input(input: Input, vim_state: &VimState) -> Message {
                     key: Key::Char('v'),
                     ctrl: false,
                     ..
-                } if vim_mode == VimMode::Visual => Message::TextAreaCancelSelection,
+                } if vim_mode == VimMode::Visual => Message::SetVimMode(VimMode::Normal),
                 Input {
                     key: Key::Char('g'),
                     ctrl: false,
@@ -256,7 +256,7 @@ pub fn handle_key_input(input: Input, vim_state: &VimState) -> Message {
             input => {
                 Message::TextAreaInput(input) // Use default key mappings in insert mode
             }
-        },
+        }
     }
 }
 

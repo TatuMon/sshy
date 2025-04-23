@@ -118,16 +118,11 @@ impl EventHandler {
         model: &Model,
     ) -> Vec<Message> {
         if let Section::ClientConfig = current_section {
-            // TODO
-            // Shorten this
-            if model
-                .get_sections_state()
-                .get_client_config_state()
-                .is_interactive_on()
-            {
+            let ccstate = model.get_client_config_state();
+            if ccstate.is_interactive_on() {
                 let msg = vim_handler::handle_key_input(
                     event.into(),
-                    model.get_vim_state().expect("no active vim state"),
+                    ccstate.get_vim_state(),
                 );
                 return vec![msg];
             }

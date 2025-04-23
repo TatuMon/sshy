@@ -1,8 +1,8 @@
 pub mod sections_state;
 pub mod vim_emulator;
 
-use sections_state::public_keys_list_state::NewPublicKeyFocus;
-use vim_emulator::{VimMode, VimState};
+use sections_state::{client_config_state::ClientConfigState, public_keys_list_state::NewPublicKeyFocus};
+use vim_emulator::VimMode;
 
 use crate::{
     commands::{self, CmdTask},
@@ -45,13 +45,6 @@ pub struct Model {
     fatal_error: Option<String>,
     /// The error message that should be displayed in the error popup
     current_error: Option<String>,
-    /// State of the Vim emulator.
-    ///
-    /// - If interactive mode is on for a textarea, user input should affect this vim state machine.
-    /// - If there's no need to have a vim state (e.g. after exiting interactive mode), this should be None
-    /// - Interactive mode is considered "on" when the focused section says so. E.g.: ClientConfigState indicates
-    /// this via the function "is_interactive_on"
-    vim_state: Option<VimState>,
 }
 
 impl Model {
@@ -294,20 +287,33 @@ impl Model {
                 self.set_popup(Some(Popup::PromptDeleteKeyPairConfirmation));
             }
             Message::TextAreaInteract => {
-                self.vim_state = Some(VimState::new(VimMode::Normal));
-                self.sections_states
-                    .get_client_config_state_mut()
-                    .enter_interactive();
+                let ccstate = self.get_client_config_state_mut();
+                ccstate.set_vim_mode(VimMode::Normal);
+                ccstate.enter_interactive();
             }
             Message::VimQuit => {
-                self.sections_states
-                    .get_client_config_state_mut()
-                    .quit_interactive();
+                self.get_client_config_state_mut().quit_interactive();
+            }
+            Message::SetVimMode(mode) => {
+                self.get_client_config_state_mut().set_vim_mode(mode);
             }
             Message::TextAreaMoveCursor(cursor_move) => {
-                self.sections_states
-                    .get_client_config_state_mut()
-                    .move_cursor(cursor_move);
+                self.get_client_config_state_mut().move_cursor(cursor_move);
+            }
+            Message::TextAreaInput(input) => {
+                self.get_client_config_state_mut().handle_textarea_input(input);
+            }
+            Message::TextAreaUndo => {
+                self.get_client_config_state_mut().textarea_undo();
+            }
+            Message::TextAreaRedo => {
+                self.get_client_config_state_mut().textarea_redo();
+            }
+            Message::TextAreaYank => {
+                self.get_client_config_state_mut().textarea_yank();
+            }
+            Message::TextAreaPaste => {
+                self.get_client_config_state_mut().textarea_paste();
             }
             _ => {}
         }
@@ -333,8 +339,8 @@ impl Model {
         self.current_error.clone()
     }
 
-    pub fn get_vim_state(&self) -> Option<&VimState> {
-        self.vim_state.as_ref()
+    pub fn get_client_config_state(&self) -> &ClientConfigState {
+        self.sections_states.get_client_config_state()
     }
 
     /// Setting a popup should also set the current section
@@ -364,5 +370,9 @@ impl Model {
         let prev_section = self.sections_states.prev_section();
         self.current_section = prev_section.clone();
         self.current_focus = Focus::Section(prev_section);
+    }
+
+    fn get_client_config_state_mut(&mut self) -> &mut ClientConfigState {
+        self.sections_states.get_client_config_state_mut()
     }
 }
