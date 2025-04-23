@@ -37,6 +37,11 @@ pub fn handle_key_input(input: Input, vim_state: &VimState) -> Message {
         VimMode::Normal | VimMode::Visual | VimMode::Operator(_) => {
             match input {
                 Input {
+                    key: Key::Char('s'),
+                    ctrl: true,
+                    ..
+                } => Message::TextAreaWriteBuffer,
+                Input {
                     key: Key::Char('h'),
                     ..
                 } => Message::TextAreaMoveCursor(CursorMove::Back),

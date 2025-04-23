@@ -4,7 +4,7 @@ use tui_textarea::{CursorMove, Input, TextArea};
 use crate::{
     model::vim_emulator::{VimMode, VimState},
     ui::widgets::blocks,
-    utils,
+    utils::{self, files},
 };
 
 #[derive(Clone)]
@@ -105,6 +105,11 @@ impl ClientConfigState {
 
     pub fn textarea_paste(&mut self) {
         self.textarea.paste();
+    }
+
+    pub fn textarea_write_buffer(&mut self) {
+        let content_lines = self.textarea.lines();
+        let _ = files::truncate_client_config_content(content_lines).expect("FAILED TO WRITE");
     }
 }
 

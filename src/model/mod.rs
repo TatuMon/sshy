@@ -315,6 +315,9 @@ impl Model {
             Message::TextAreaPaste => {
                 self.get_client_config_state_mut().textarea_paste();
             }
+            Message::TextAreaWriteBuffer => {
+                self.get_client_config_state_mut().textarea_write_buffer();
+            }
             _ => {}
         }
     }

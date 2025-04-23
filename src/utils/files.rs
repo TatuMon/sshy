@@ -1,6 +1,6 @@
 use std::{
     fs::{self, File},
-    io::{self, BufRead, BufReader},
+    io::{self, BufRead, BufReader, Write},
     path::{Path, PathBuf},
 };
 
@@ -134,4 +134,18 @@ pub fn get_client_config_content() -> Result<String> {
     create_file_if_non_existing(&config_file_path)?;
 
     fs::read_to_string(config_file_path).wrap_err("Failed to read client config file")
+}
+
+pub fn truncate_client_config_content(lines: &[String]) -> Result<()> {
+    let ssh_dir = get_user_ssh_dir()?;
+    let config_file_path = ssh_dir.join("config");
+    create_file_if_non_existing(&config_file_path)?;
+
+    let mut file = File::create(config_file_path)?;
+
+    for line in lines {
+        writeln!(file, "{}", line)?;
+    }
+    file.flush()?;
+    Ok(())
 }

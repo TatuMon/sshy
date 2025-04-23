@@ -88,6 +88,8 @@ pub enum Message {
     TextAreaInput(Input),
     SetVimMode(VimMode),
     SetVimPendingInput(Input),
-    VimQuit
+    VimQuit,
+    // Confirm buffer writing to file
+    TextAreaWriteBuffer,
     // FALTAN
 }

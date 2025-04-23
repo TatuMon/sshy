@@ -1,6 +1,6 @@
 use ratatui::{style::Style, text::Line, widgets::{Block, BorderType, Borders}};
 
-use crate::{model::vim_emulator::VimState, ui::ui_utils::styles};
+use crate::{model::vim_emulator::{VimMode, VimState}, ui::ui_utils::styles};
 
 pub fn ssh_config_block<'a>(
     is_interacting: bool,
@@ -25,6 +25,10 @@ pub fn ssh_config_block<'a>(
 
         if let Some(vim_border) = styles::vim_border(vim_state) {
             block = block.border_style(vim_border);
+        }
+
+        if vim_state.get_mode() == VimMode::Normal {
+            block = block.title_bottom(Line::from("Press CTRL+s to write to buffer").right_aligned());
         }
     }
 
