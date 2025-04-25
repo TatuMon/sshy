@@ -1,4 +1,5 @@
 pub mod messages;
+mod vim_handler;
 
 use std::{
     collections::{HashMap, VecDeque},
@@ -116,9 +117,19 @@ impl EventHandler {
         event: KeyEvent,
         model: &Model,
     ) -> Vec<Message> {
+        if let Section::ClientConfig = current_section {
+            let ccstate = model.get_client_config_state();
+            if ccstate.is_interactive_on() {
+                let msg = vim_handler::handle_key_input(
+                    event.into(),
+                    ccstate.get_vim_state(),
+                );
+                return vec![msg];
+            }
+        }
+
         match event.code {
             KeyCode::Char('q') => vec![Message::ShowPopup(Popup::ExitPrompt)],
-            KeyCode::Char('p') => vec![Message::ShowPopup(Popup::DebugModel)],
             KeyCode::Right | KeyCode::Char('l') => vec![Message::MoveToNextSection],
             KeyCode::Left | KeyCode::Char('h') => vec![Message::MoveToPrevSection],
             KeyCode::Up | KeyCode::Char('k') => vec![Message::SelPrevListItem],
@@ -133,6 +144,7 @@ impl EventHandler {
             KeyCode::Char('R') => match current_section {
                 Section::PublicKeysList => vec![Message::RefreshPublicKeysList],
                 Section::KnownHostsList => vec![Message::RefreshKnownHostsList],
+                Section::ClientConfig => vec![],
             },
             KeyCode::Char('d') => {
                 if let Section::PublicKeysList = current_section {
@@ -145,9 +157,21 @@ impl EventHandler {
                 self.copy_pub_key_to_clipboard(model);
                 vec![]
             }
-            KeyCode::Enter => {
-                vec![Message::ShowPopup(Popup::ShowPubKeyContent)]
-            }
+            KeyCode::Enter => match current_section {
+                // TODO
+                // Disgustingly long. Must change in the future
+                Section::PublicKeysList
+                    if model
+                        .get_sections_state()
+                        .get_public_keys_list_state()
+                        .get_selected_item_idx()
+                        .is_some() =>
+                {
+                    vec![Message::ShowPopup(Popup::ShowPubKeyContent)]
+                }
+                Section::ClientConfig => vec![Message::TextAreaInteract],
+                _ => vec![],
+            },
             _ => vec![],
         }
     }
@@ -167,10 +191,7 @@ impl EventHandler {
             .get_public_keys_list_state()
             .get_selected_key_name()
             .expect("Must select a key to delete");
-        async_jobs::delete_key_pair::delete_key_pair(
-            key_name,
-            self.task_msg_tx.clone()
-        );
+        async_jobs::delete_key_pair::delete_key_pair(key_name, self.task_msg_tx.clone());
     }
 
     /// Starts the given command task

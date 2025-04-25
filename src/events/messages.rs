@@ -1,7 +1,9 @@
-use crate::{commands, ui::components::popups::Popup};
+use crate::{commands, ui::components::popups::Popup, model::vim_emulator::VimMode};
+use tui_textarea::{CursorMove, Scrolling, Input};
 
 /// Messages are events that the model has to react to and update it's
 /// state
+#[derive(Debug)]
 pub enum Message {
     /// Indicates that the app should stop
     StopApp,
@@ -40,4 +42,54 @@ pub enum Message {
     RefreshPublicKeysList,
     RefreshKnownHostsList,
     PromptDeleteKeyPairConfirmation,
+    /// Enters interactive mode with the focused textarea, initiating a Vim state machine and
+    /// updating the textarea's section state
+    TextAreaInteract,
+    /// Delete from cursor to line end and enter vim normal mode
+    TextAreaDeleteToEnd,
+    /// Delete selected text and enter vim normal mode
+    TextAreaDelete,
+    /// Delete line and enter vim normal mode
+    TextAreaDeleteLine,
+    /// Delete selected text and enter vim insert mode
+    TextAreaCut,
+    /// Delete from cursor to line end and enter vim insert mode
+    TextAreaCutToEnd,
+    /// Delete line and enter vim insert mode
+    TextAreaCutLine,
+    /// Start selection and enter vim visual mode
+    TextAreaStartSelection,
+    /// Start line selection and enter vim visual mode
+    TextAreaStartLineSelection,
+    /// Cancel selection and enter vim normal mode
+    TextAreaCancelSelection,
+    /// Paste yanked text and enter vim normal mode
+    TextAreaPaste,
+    /// Undo last change and enter vim normal mode
+    TextAreaUndo,
+    /// Redo last change and enter vim normal mode
+    TextAreaRedo,
+    /// Delete next char and enter vim normal mode
+    TextAreaDeleteNextChar,
+    /// Enters vim insert mode, creating a new line after the current one
+    TextAreaInsertAtNewlineAfter,
+    /// Enters vim insert mode, creating a new line before the current one
+    TextAreaInsertAtNewlineBefore,
+    /// Enters vim insert mode, positioning the cursor after the char
+    TextAreaInsertAfter,
+    /// Enters vim insert mode, positioning the cursor at the end of the line
+    TextAreaInsertAtEnd,
+    /// Enters vim insert mode, positioning the cursor at the start of the line
+    TextAreaInsertAtStart,
+    TextAreaMoveCursor(CursorMove),
+    TextAreaScroll(Scrolling),
+    // Yank and enter vim normal mode
+    TextAreaYank,
+    TextAreaInput(Input),
+    SetVimMode(VimMode),
+    SetVimPendingInput(Input),
+    VimQuit,
+    // Confirm buffer writing to file
+    TextAreaWriteBuffer,
+    // FALTAN
 }

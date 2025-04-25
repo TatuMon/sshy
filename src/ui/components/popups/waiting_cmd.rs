@@ -24,7 +24,7 @@ pub fn draw_waiting_cmd(f: &mut Frame, model: &Model) {
 
     let paragraph = Paragraph::new(styled_text).block(popup_block);
 
-    let area = centered_rect_for_paragraph(&paragraph, 50, 50, f.size());
+    let area = centered_rect_for_paragraph(&paragraph, 50, 50, f.area());
 
     f.render_widget(Clear, area);
     f.render_widget(paragraph, area);

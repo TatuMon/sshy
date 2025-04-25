@@ -23,7 +23,7 @@ pub fn draw_popup_with_cfg(f: &mut Frame, content: String, variant: ColorVariant
 
     let paragraph = Paragraph::new(styled_text).block(popup_block);
 
-    let area = centered_rect_for_paragraph(&paragraph, 50, 50, f.size());
+    let area = centered_rect_for_paragraph(&paragraph, 50, 50, f.area());
 
     f.render_widget(Clear, area);
     f.render_widget(paragraph, area);

@@ -17,7 +17,7 @@ pub fn draw_error_msg(f: &mut Frame, model: &Model) {
 
     let paragraph = Paragraph::new(error_msg).block(popup_block);
 
-    let area = centered_rect_for_paragraph(&paragraph, 50, 50, f.size());
+    let area = centered_rect_for_paragraph(&paragraph, 50, 50, f.area());
 
     f.render_widget(Clear, area);
     f.render_widget(paragraph, area);

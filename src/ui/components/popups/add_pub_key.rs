@@ -19,7 +19,7 @@ pub fn draw_add_pub_key_popup(f: &mut Frame, model: &Model) {
     let popup_block = popups::basic_popup_block("New public key (ssh-keygen)")
         .title_bottom(Line::from("Press ⏎ to confirm || It'll be stored at ~/.ssh").right_aligned());
 
-    let f_area = f.size();
+    let f_area = f.area();
     let area = centered_rect_px(f_area.width / 2, 13, f_area);
 
     f.render_widget(Clear, area);

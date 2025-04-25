@@ -1,7 +1,8 @@
 pub mod sections_state;
+pub mod vim_emulator;
 
-use sections_state::public_keys_list_state::NewPublicKeyFocus;
-use serde::Serialize;
+use sections_state::{client_config_state::ClientConfigState, public_keys_list_state::NewPublicKeyFocus};
+use vim_emulator::VimMode;
 
 use crate::{
     commands::{self, CmdTask},
@@ -15,7 +16,7 @@ use crate::{
 
 use self::sections_state::SectionsStates;
 
-#[derive(Default, Clone, PartialEq, Serialize)]
+#[derive(Default, Clone, PartialEq)]
 pub enum RunningState {
     #[default]
     Running,
@@ -26,7 +27,7 @@ pub enum RunningState {
 ///
 /// Changes made to this struct MUST be issued using the 'update' method, which
 /// updates the state based on the given Message
-#[derive(Default, Serialize)]
+#[derive(Default)]
 pub struct Model {
     running_state: RunningState,
     /// Don't manually modify it. Use self.set_popup instead.
@@ -81,6 +82,7 @@ impl Model {
                             .sections_states
                             .get_public_keys_list_state_mut()
                             .next_item(),
+                        Section::ClientConfig => {}
                     }
                 }
             }
@@ -95,6 +97,7 @@ impl Model {
                             .sections_states
                             .get_public_keys_list_state_mut()
                             .prev_item(),
+                        Section::ClientConfig => {}
                     }
                 }
             }
@@ -229,7 +232,8 @@ impl Model {
                             new_key_state.del_passphrase_check();
                         }
                         Popup::ExitPrompt => {}
-                        _ => {} }
+                        _ => {}
+                    }
                 }
             }
             Message::CmdSpawned(cmd_task) => match cmd_task {
@@ -267,16 +271,52 @@ impl Model {
                     .clean_passphrases();
             }
             Message::RefreshPublicKeysList => {
-                self.sections_states.get_public_keys_list_state_mut().load_public_keys();
+                self.sections_states
+                    .get_public_keys_list_state_mut()
+                    .load_public_keys();
             }
             Message::PromptKeyOverwrite => {
                 self.set_popup(Some(Popup::PromptKeyOverwrite));
             }
             Message::RefreshKnownHostsList => {
-                self.sections_states.get_known_hosts_list_state_mut().load_known_hosts();
+                self.sections_states
+                    .get_known_hosts_list_state_mut()
+                    .load_known_hosts();
             }
             Message::PromptDeleteKeyPairConfirmation => {
                 self.set_popup(Some(Popup::PromptDeleteKeyPairConfirmation));
+            }
+            Message::TextAreaInteract => {
+                let ccstate = self.get_client_config_state_mut();
+                ccstate.set_vim_mode(VimMode::Normal);
+                ccstate.enter_interactive();
+            }
+            Message::VimQuit => {
+                self.get_client_config_state_mut().quit_interactive();
+            }
+            Message::SetVimMode(mode) => {
+                self.get_client_config_state_mut().set_vim_mode(mode);
+            }
+            Message::TextAreaMoveCursor(cursor_move) => {
+                self.get_client_config_state_mut().move_cursor(cursor_move);
+            }
+            Message::TextAreaInput(input) => {
+                self.get_client_config_state_mut().handle_textarea_input(input);
+            }
+            Message::TextAreaUndo => {
+                self.get_client_config_state_mut().textarea_undo();
+            }
+            Message::TextAreaRedo => {
+                self.get_client_config_state_mut().textarea_redo();
+            }
+            Message::TextAreaYank => {
+                self.get_client_config_state_mut().textarea_yank();
+            }
+            Message::TextAreaPaste => {
+                self.get_client_config_state_mut().textarea_paste();
+            }
+            Message::TextAreaWriteBuffer => {
+                self.get_client_config_state_mut().textarea_write_buffer();
             }
             _ => {}
         }
@@ -300,6 +340,10 @@ impl Model {
 
     pub fn get_current_error(&self) -> Option<String> {
         self.current_error.clone()
+    }
+
+    pub fn get_client_config_state(&self) -> &ClientConfigState {
+        self.sections_states.get_client_config_state()
     }
 
     /// Setting a popup should also set the current section
@@ -329,5 +373,9 @@ impl Model {
         let prev_section = self.sections_states.prev_section();
         self.current_section = prev_section.clone();
         self.current_focus = Focus::Section(prev_section);
+    }
+
+    fn get_client_config_state_mut(&mut self) -> &mut ClientConfigState {
+        self.sections_states.get_client_config_state_mut()
     }
 }

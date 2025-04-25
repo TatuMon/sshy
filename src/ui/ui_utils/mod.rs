@@ -77,9 +77,7 @@ pub fn centered_rect_for_paragraph(
     } else {
         [
             Constraint::Percentage((100 - height_percentage) / 2),
-            Constraint::Length(paragraph_height + 2), // The 2 is because line_count doesn't
-            // include the pixels needed for the
-            // borders
+            Constraint::Length(paragraph_height),
             Constraint::Percentage((100 - height_percentage) / 2),
         ]
     };
@@ -93,7 +91,7 @@ pub fn centered_rect_for_paragraph(
     } else {
         [
             Constraint::Percentage((100 - width_percentage) / 2),
-            Constraint::Length(paragraph_width + 2),
+            Constraint::Length(paragraph_width),
             Constraint::Percentage((100 - width_percentage) / 2),
         ]
     };

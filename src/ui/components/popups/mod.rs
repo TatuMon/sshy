@@ -1,5 +1,4 @@
 pub mod add_pub_key;
-pub mod debug_model;
 pub mod exit_prompt;
 pub mod waiting_cmd;
 pub mod error_msg;
@@ -9,16 +8,12 @@ pub mod prompt_key_overwrite;
 pub mod prompt_delete_key_pair_confirmation;
 pub mod show_pub_key_content;
 
-use serde::Serialize;
-
 use crate::ui::color_variants::ColorVariant;
 
-#[derive(Clone, Serialize, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub enum Popup {
     ExitPrompt,
     AddPubKey,
-    /// Popup used to debug the model's state
-    DebugModel,
     WaitingCmd,
     ErrorMsg,
     PromptPassphrase,

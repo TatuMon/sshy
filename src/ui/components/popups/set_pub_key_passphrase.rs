@@ -25,7 +25,7 @@ pub fn draw_set_pub_key_passphrase(f: &mut Frame, model: &Model, reenter: bool) 
     let popup_block = popups::basic_popup_block(block_content)
         .title_bottom(Line::from("Press ⏎ to confirm").right_aligned());
 
-    let f_area = f.size();
+    let f_area = f.area();
     let area = centered_rect_px(f_area.width / 2, 13, f_area);
 
     f.render_widget(Clear, area);

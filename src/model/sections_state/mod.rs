@@ -3,18 +3,22 @@ use serde::Serialize;
 use crate::ui::components::sections::Section;
 
 use self::{
-    known_hosts_list_state::KnownHostsListState, public_keys_list_state::PublicKeysListState,
+    known_hosts_list_state::KnownHostsListState,
+    public_keys_list_state::PublicKeysListState,
+    client_config_state::ClientConfigState
 };
 
 pub mod known_hosts_list_state;
 pub mod public_keys_list_state;
+pub mod client_config_state;
 
-const SECTIONS_ORDER: [Section; 2] = [Section::KnownHostsList, Section::PublicKeysList];
+const SECTIONS_ORDER: [Section; 3] = [Section::KnownHostsList, Section::PublicKeysList, Section::ClientConfig];
 
 #[derive(Default, Serialize)]
 pub struct SectionsStates {
     known_hosts_list_state: KnownHostsListState,
     public_keys_list_state: PublicKeysListState,
+    client_config_state: ClientConfigState
 }
 
 impl SectionsStates {
@@ -59,11 +63,18 @@ impl SectionsStates {
         match section {
             Section::KnownHostsList => {
                 self.public_keys_list_state.unfocus();
+                self.client_config_state.unfocus();
                 self.known_hosts_list_state.focus();
             }
             Section::PublicKeysList => {
                 self.known_hosts_list_state.unfocus();
+                self.client_config_state.unfocus();
                 self.public_keys_list_state.focus();
+            }
+            Section::ClientConfig => {
+                self.known_hosts_list_state.unfocus();
+                self.public_keys_list_state.unfocus();
+                self.client_config_state.focus();
             }
         }
     }
@@ -72,6 +83,7 @@ impl SectionsStates {
         match section {
             Section::KnownHostsList => self.known_hosts_list_state.has_focus(),
             Section::PublicKeysList => self.public_keys_list_state.has_focus(),
+            Section::ClientConfig => self.client_config_state.has_focus()
         }
     }
 
@@ -83,11 +95,19 @@ impl SectionsStates {
         &self.public_keys_list_state
     }
 
+    pub fn get_client_config_state(&self) -> &ClientConfigState {
+        &self.client_config_state
+    }
+
     pub fn get_known_hosts_list_state_mut(&mut self) -> &mut KnownHostsListState {
         &mut self.known_hosts_list_state
     }
 
     pub fn get_public_keys_list_state_mut(&mut self) -> &mut PublicKeysListState {
         &mut self.public_keys_list_state
+    }
+
+    pub fn get_client_config_state_mut(&mut self) -> &mut ClientConfigState {
+        &mut self.client_config_state
     }
 }

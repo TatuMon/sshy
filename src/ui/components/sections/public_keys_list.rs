@@ -26,7 +26,7 @@ pub fn draw(f: &mut Frame, section_state: &PublicKeysListState) {
         .highlight_style(styles::highlighted_item())
         .block(block);
 
-    let area = get_area(f.size());
+    let area = get_area(f.area());
     let mut list_state = ListState::default();
     list_state.select(section_state.get_selected_item_idx());
 
@@ -41,6 +41,6 @@ fn get_area(frame_rect: Rect) -> Rect {
 
     Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Percentage(33), Constraint::Percentage(33)])
+        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
         .split(column)[1]
 }

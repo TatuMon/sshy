@@ -1,5 +1,6 @@
 pub mod known_hosts_list;
 pub mod public_keys_list;
+pub mod client_config;
 
 use std::fmt::Display;
 
@@ -14,13 +15,15 @@ pub enum Section {
     #[default]
     KnownHostsList,
     PublicKeysList,
+    ClientConfig
 }
 
 impl Display for Section {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Section::KnownHostsList => write!(f, "Known Hosts List"),
-            Section::PublicKeysList => write!(f, "Public Keys List")
+            Section::PublicKeysList => write!(f, "Public Keys List"),
+            Section::ClientConfig => write!(f, "SSH Client Config")
         }
     }
 }

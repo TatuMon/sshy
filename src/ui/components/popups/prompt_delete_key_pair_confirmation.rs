@@ -22,7 +22,7 @@ pub fn draw_prompt_delete_key_pair_confirmation(f: &mut Frame, model: &Model) {
     let paragraph_content = format!("Delete '{}' key pair?", target_key_pair);
     let paragraph = Paragraph::new(paragraph_content).block(popup_block);
 
-    let area = centered_rect_for_paragraph(&paragraph, 50, 50, f.size());
+    let area = centered_rect_for_paragraph(&paragraph, 50, 50, f.area());
 
     f.render_widget(Clear, area);
     f.render_widget(paragraph, area);

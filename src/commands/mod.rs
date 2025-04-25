@@ -14,7 +14,7 @@ pub type TaskMessageRx = mpsc::Receiver<Message>;
 pub type TaskMessageTx = mpsc::Sender<Message>;
 
 /// List of available command tasks
-#[derive(Clone, Copy, Eq, Hash, PartialEq, serde::Serialize)]
+#[derive(Clone, Copy, Eq, Hash, PartialEq, serde::Serialize, Debug)]
 pub enum CmdTask {
     SshKeygen,
 }
