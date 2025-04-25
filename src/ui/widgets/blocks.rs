@@ -2,6 +2,13 @@ use ratatui::{style::Style, text::Line, widgets::{Block, BorderType, Borders}};
 
 use crate::{model::vim_emulator::{VimMode, VimState}, ui::ui_utils::styles};
 
+pub fn simple_block<'a>() -> Block<'a> {
+    Block::default()
+        .borders(Borders::ALL)
+        .border_type(BorderType::Rounded)
+        .style(Style::default())
+}
+
 pub fn ssh_config_block<'a>(
     is_interacting: bool,
     has_focus: bool,
