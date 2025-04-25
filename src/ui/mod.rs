@@ -2,9 +2,11 @@ pub mod color_variants;
 pub mod components;
 pub mod ui_utils;
 pub mod widgets;
+pub mod app_layout;
 
 use color_eyre::eyre::{Context, Result};
-use components::popups::waiting_cmd;
+use components::{footers, popups::waiting_cmd};
+use app_layout::AppLayout;
 
 use crate::{model::Model, terminal::SshyTerminal};
 
@@ -35,11 +37,11 @@ impl Default for Focus {
 pub fn draw(terminal: &mut SshyTerminal, model: &Model) -> Result<()> {
     terminal
         .draw(|f| {
-            // We first draw the sections
-            known_hosts_list::draw(f, model.get_sections_state().get_known_hosts_list_state());
-            public_keys_list::draw(f, model.get_sections_state().get_public_keys_list_state());
-            client_config::draw(f, model.get_sections_state().get_client_config_state());
-            // And then the current popup (if any)
+            let app_layout = AppLayout::from_frame(f);
+            footers::main_footer::draw_footer(f, &app_layout.main_footer, model);
+            known_hosts_list::draw(f, &app_layout.known_hosts_list, model.get_sections_state().get_known_hosts_list_state());
+            public_keys_list::draw(f, &app_layout.public_keys_list, model.get_sections_state().get_public_keys_list_state());
+            client_config::draw(f, &app_layout.client_config, model.get_sections_state().get_client_config_state());
             if let Some(popup) = model.get_popup() {
                 match popup {
                     Popup::ExitPrompt => exit_prompt::draw_exit_popup(f),

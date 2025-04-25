@@ -342,6 +342,10 @@ impl Model {
         self.current_error.clone()
     }
 
+    pub fn get_current_section(&self) -> Section {
+        self.current_section.clone()
+    }
+
     pub fn get_client_config_state(&self) -> &ClientConfigState {
         self.sections_states.get_client_config_state()
     }
