@@ -317,6 +317,9 @@ impl Model {
             Message::TextAreaWriteBuffer => {
                 self.get_client_config_state_mut().textarea_write_buffer();
             }
+            Message::TextAreaScroll(scroll) => {
+                self.get_client_config_state_mut().textarea_scroll(scroll);
+            }
             _ => {}
         }
     }

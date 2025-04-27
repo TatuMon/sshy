@@ -1,5 +1,5 @@
 use serde::Serialize;
-use tui_textarea::{CursorMove, Input, TextArea};
+use tui_textarea::{CursorMove, Input, Scrolling, TextArea};
 
 use crate::{
     model::vim_emulator::{VimMode, VimState},
@@ -110,6 +110,10 @@ impl ClientConfigState {
     pub fn textarea_write_buffer(&mut self) {
         let content_lines = self.textarea.lines();
         files::truncate_client_config_content(content_lines).expect("FAILED TO WRITE");
+    }
+
+    pub fn textarea_scroll(&mut self, scroll: Scrolling) {
+        self.textarea.scroll(scroll)
     }
 }
 
