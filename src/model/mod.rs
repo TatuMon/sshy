@@ -34,7 +34,6 @@ pub struct Model {
     current_popup: Option<Popup>,
     current_section: Section,
     current_focus: Focus,
-    previous_focused_section: Focus,
     sections_states: SectionsStates,
     /// Indicates which, if any, is the currently running command
     /// NOTE: For now, there'll only be a single command running at a time. In the future, I'm
@@ -327,8 +326,8 @@ impl Model {
     }
 
     pub fn get_current_command(&self) -> Option<commands::CmdTask> {
-        for cmd_task in self.current_commands.iter() {
-            return Some(cmd_task.clone());
+        if let Some(cmd_task) = self.current_commands.first() {
+            return Some(*cmd_task);
         }
 
         None
@@ -343,7 +342,7 @@ impl Model {
     }
 
     pub fn get_current_section(&self) -> Section {
-        self.current_section.clone()
+        self.current_section
     }
 
     pub fn get_client_config_state(&self) -> &ClientConfigState {
@@ -362,20 +361,20 @@ impl Model {
         if let Some(ref popup) = new_popup {
             self.current_focus = Focus::Popup(popup.clone());
         } else {
-            self.current_focus = Focus::Section(self.current_section.clone());
+            self.current_focus = Focus::Section(self.current_section);
         }
         self.current_popup = new_popup;
     }
 
     fn next_section(&mut self) {
         let next_section = self.sections_states.next_section();
-        self.current_section = next_section.clone();
+        self.current_section = next_section;
         self.current_focus = Focus::Section(next_section);
     }
 
     fn prev_section(&mut self) {
         let prev_section = self.sections_states.prev_section();
-        self.current_section = prev_section.clone();
+        self.current_section = prev_section;
         self.current_focus = Focus::Section(prev_section);
     }
 

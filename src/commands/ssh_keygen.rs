@@ -42,16 +42,12 @@ impl SshKeygenCmd {
 
         let home_dir = utils::files::get_user_ssh_dir()?.join(&cmd.filename);
 
-        let home_str = home_dir.as_os_str().to_str().ok_or_else(|| eyre!("invalid home directory"))?;
+        let home_str = home_dir
+            .as_os_str()
+            .to_str()
+            .ok_or_else(|| eyre!("invalid home directory"))?;
 
-        let args: [&str; 6] = [
-            "-t",
-            cmd.keytype.into(),
-            "-f",
-            home_str,
-            "-C",
-            &cmd.comment,
-        ];
+        let args: [&str; 6] = ["-t", cmd.keytype.into(), "-f", home_str, "-C", &cmd.comment];
 
         let pty_system = portable_pty::native_pty_system();
         let pty_pair = pty_system
@@ -109,42 +105,39 @@ fn handle_ssh_keygen_output(content: &[u8]) -> Result<Vec<Message>> {
 
     let match_pass_prompt = content_string.contains(SET_PASSPHRASE_PROMPT);
     if match_pass_prompt {
-        return Ok(vec!(Message::PromptNewKeyPassphrase));
+        return Ok(vec![Message::PromptNewKeyPassphrase]);
     }
 
     let match_reenter_pass_prompt = content_string.contains(SET_REENTER_PASS_PROMPT);
     if match_reenter_pass_prompt {
-        return Ok(vec!(Message::PromptReenterNewKeyPassPhrase));
+        return Ok(vec![Message::PromptReenterNewKeyPassPhrase]);
     }
 
     let match_successful_keygen = content_string.contains(SUCCESSFUL_KEYGEN);
     if match_successful_keygen {
-        let succ_popup_msg = Message::ShowPopup(WithCfg(
-            content_string,
-            ColorVariant::Success,
-        ));
+        let succ_popup_msg = Message::ShowPopup(WithCfg(content_string, ColorVariant::Success));
         let reload_keys_msg = Message::RefreshPublicKeysList;
-        return Ok(vec!(succ_popup_msg, reload_keys_msg));
+        return Ok(vec![succ_popup_msg, reload_keys_msg]);
     }
 
     let match_key_exists = content_string.contains(EXISTING_KEY);
     if match_key_exists {
-        return Ok(vec!(Message::PromptKeyOverwrite));
+        return Ok(vec![Message::PromptKeyOverwrite]);
     }
 
     let match_no_such_dir = content_string.contains(NO_SUCH_DIR);
     if match_no_such_dir {
-        return Ok(vec!(Message::ShowPopup(WithCfg(
+        return Ok(vec![Message::ShowPopup(WithCfg(
             content_string,
             ColorVariant::Danger,
-        ))));
+        ))]);
     }
 
     // return Ok(Message::ShowPopup(WithCfg(
     //     content_string,
     //     ColorVariant::Warning,
     // )));
-    return Ok(vec!(Message::Draw))
+    Ok(vec![Message::Draw])
 }
 
 async fn handle_ssh_keygen(mut reader_end: super::CmdReaderEnd) {
@@ -153,7 +146,7 @@ async fn handle_ssh_keygen(mut reader_end: super::CmdReaderEnd) {
         match reader_end.reader.read(&mut buf) {
             Ok(0) => {
                 // EOF reached
-                let _ = reader_end
+                reader_end
                     .msg_sender
                     .send(Message::CmdFinished)
                     .expect("failed to terminate child command");
@@ -167,7 +160,9 @@ async fn handle_ssh_keygen(mut reader_end: super::CmdReaderEnd) {
                         .msg_sender
                         .send(Message::PrintError(e.to_string()))
                         .unwrap(),
-                    Ok(msgs) => msgs.into_iter().for_each(|msg| reader_end.msg_sender.send(msg).unwrap()),
+                    Ok(msgs) => msgs
+                        .into_iter()
+                        .for_each(|msg| reader_end.msg_sender.send(msg).unwrap()),
                 }
             }
             Err(e) => {

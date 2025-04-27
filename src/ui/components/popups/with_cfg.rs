@@ -15,7 +15,6 @@ pub fn draw_popup_with_cfg(f: &mut Frame, content: String, variant: ColorVariant
 
     let color = match variant {
         ColorVariant::Success => Color::Green,
-        ColorVariant::Warning => Color::LightYellow,
         ColorVariant::Danger => Color::Red
     };
 

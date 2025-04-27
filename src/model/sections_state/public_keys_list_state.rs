@@ -1,4 +1,4 @@
-use color_eyre::{Result, eyre::eyre};
+use color_eyre::{eyre::eyre, Result};
 use serde::Serialize;
 use std::path::PathBuf;
 
@@ -121,11 +121,8 @@ impl NewPublicKeyState {
     }
 
     pub fn del_passphare_char(&mut self) {
-        match &mut self.passphrase {
-            Some(pass) => {
-                pass.pop();
-            }
-            _ => {}
+        if let Some(pass) = &mut self.passphrase {
+            pass.pop();
         }
     }
 
@@ -141,11 +138,8 @@ impl NewPublicKeyState {
     }
 
     pub fn del_passphrase_check_char(&mut self) {
-        match &mut self.passphrase_check {
-            Some(pass) => {
-                pass.pop();
-            }
-            _ => {}
+        if let Some(pass) = &mut self.passphrase_check {
+            pass.pop();
         }
     }
 
@@ -179,7 +173,7 @@ impl NewPublicKeyState {
             ));
         }
 
-        return Ok(());
+        Ok(())
     }
 }
 
@@ -244,7 +238,7 @@ impl PublicKeysListState {
             None => None,
         };
 
-        let ssh_dir = files::get_user_ssh_dir().unwrap_or(PathBuf::new());
+        let ssh_dir = files::get_user_ssh_dir().unwrap_or_default();
 
         public_key_name.map(|n| ssh_dir.join(n))
     }
@@ -259,7 +253,7 @@ impl PublicKeysListState {
                 "An error ocurred while trying to read the key name. Use R to refresh the list and try again."
         ))?;
 
-        files::get_pub_key_content(public_key_name)        
+        files::get_pub_key_content(public_key_name)
     }
 
     pub fn next_item(&mut self) {

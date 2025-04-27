@@ -109,7 +109,7 @@ impl ClientConfigState {
 
     pub fn textarea_write_buffer(&mut self) {
         let content_lines = self.textarea.lines();
-        let _ = files::truncate_client_config_content(content_lines).expect("FAILED TO WRITE");
+        files::truncate_client_config_content(content_lines).expect("FAILED TO WRITE");
     }
 }
 

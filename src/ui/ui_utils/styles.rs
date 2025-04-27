@@ -37,6 +37,5 @@ pub fn vim_border(vim_state: &VimState) -> Option<Style> {
         VimMode::Normal => Some(Style::new().fg(Color::LightBlue)),
         VimMode::Insert => Some(Style::new().fg(Color::LightGreen)),
         VimMode::Visual => Some(Style::new().fg(Color::LightMagenta)),
-        VimMode::Operator(_) => None
     }
 }

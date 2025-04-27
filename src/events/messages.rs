@@ -49,20 +49,12 @@ pub enum Message {
     TextAreaDeleteToEnd,
     /// Delete selected text and enter vim normal mode
     TextAreaDelete,
-    /// Delete line and enter vim normal mode
-    TextAreaDeleteLine,
     /// Delete selected text and enter vim insert mode
     TextAreaCut,
     /// Delete from cursor to line end and enter vim insert mode
     TextAreaCutToEnd,
-    /// Delete line and enter vim insert mode
-    TextAreaCutLine,
-    /// Start selection and enter vim visual mode
-    TextAreaStartSelection,
     /// Start line selection and enter vim visual mode
     TextAreaStartLineSelection,
-    /// Cancel selection and enter vim normal mode
-    TextAreaCancelSelection,
     /// Paste yanked text and enter vim normal mode
     TextAreaPaste,
     /// Undo last change and enter vim normal mode
@@ -87,7 +79,6 @@ pub enum Message {
     TextAreaYank,
     TextAreaInput(Input),
     SetVimMode(VimMode),
-    SetVimPendingInput(Input),
     VimQuit,
     // Confirm buffer writing to file
     TextAreaWriteBuffer,

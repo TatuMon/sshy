@@ -1,23 +1,6 @@
 use crate::events::messages::Message;
 use crate::model::vim_emulator::{VimMode, VimState};
-use tui_textarea::{CursorMove, Input, Key, Scrolling, TextArea};
-
-// How the Vim emulation state transitions
-pub enum VimTransition {
-    Nop,
-    Mode(VimMode),
-    Pending(Input),
-    Quit,
-}
-
-fn handle_transition(transition: VimTransition) -> Message {
-    match transition {
-        VimTransition::Mode(mode) => Message::SetVimMode(mode),
-        VimTransition::Pending(input) => Message::SetVimPendingInput(input),
-        VimTransition::Quit => Message::VimQuit,
-        VimTransition::Nop => Message::Draw,
-    }
-}
+use tui_textarea::{CursorMove, Input, Key, Scrolling};
 
 /// Handles the given input based on the given vim mode
 ///
@@ -33,8 +16,8 @@ pub fn handle_key_input(input: Input, vim_state: &VimState) -> Message {
 
     let vim_mode = vim_state.get_mode();
 
-    return match vim_mode {
-        VimMode::Normal | VimMode::Visual | VimMode::Operator(_) => {
+    match vim_mode {
+        VimMode::Normal | VimMode::Visual => {
             match input {
                 Input {
                     key: Key::Char('s'),
@@ -163,6 +146,12 @@ pub fn handle_key_input(input: Input, vim_state: &VimState) -> Message {
                     ctrl: true,
                     ..
                 } => Message::TextAreaScroll(Scrolling::PageUp),
+                Input { key: Key::Esc, .. }
+                | Input {
+                    key: Key::Char('v'),
+                    ctrl: false,
+                    ..
+                } if vim_mode == VimMode::Visual => Message::SetVimMode(VimMode::Normal),
                 Input {
                     key: Key::Char('v'),
                     ctrl: false,
@@ -173,12 +162,6 @@ pub fn handle_key_input(input: Input, vim_state: &VimState) -> Message {
                     ctrl: false,
                     ..
                 } if vim_mode == VimMode::Normal => Message::TextAreaStartLineSelection,
-                Input { key: Key::Esc, .. }
-                | Input {
-                    key: Key::Char('v'),
-                    ctrl: false,
-                    ..
-                } if vim_mode == VimMode::Visual => Message::SetVimMode(VimMode::Normal),
                 Input {
                     key: Key::Char('g'),
                     ctrl: false,
@@ -245,10 +228,7 @@ pub fn handle_key_input(input: Input, vim_state: &VimState) -> Message {
                     ctrl: false,
                     ..
                 } if vim_mode == VimMode::Visual => Message::TextAreaCut,
-                    // textarea.move_cursor(CursorMove::Forward); // Vim's text selection is inclusive
-                    // textarea.cut();
-                    // return VimTransition::Mode(VimMode::Insert);
-                input => Message::SetVimPendingInput(input),
+                _ => Message::Draw
             }
         }
         VimMode::Insert => match input {
@@ -262,21 +242,5 @@ pub fn handle_key_input(input: Input, vim_state: &VimState) -> Message {
                 Message::TextAreaInput(input) // Use default key mappings in insert mode
             }
         }
-    }
-}
-
-pub fn handle_vim_operator(operator: VimMode) -> Message {
-    // Handle the pending operator
-    match operator {
-        VimMode::Operator('y') => {
-            Message::TextAreaYank
-        }
-        VimMode::Operator('d') => {
-            Message::TextAreaDelete
-        }
-        VimMode::Operator('c') => {
-            Message::TextAreaCut
-        }
-        _ => Message::Draw,
     }
 }

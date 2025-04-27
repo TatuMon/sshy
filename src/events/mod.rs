@@ -99,7 +99,7 @@ impl EventHandler {
     ///
     /// Matching the code first, makes it impossible to write to an input
     fn handle_key_event(&mut self, key: KeyEvent, model: &Model) -> Vec<Message> {
-        if let Some(_) = model.get_fatal_error() {
+        if model.get_fatal_error().is_some() {
             return vec![Message::StopApp];
         }
 

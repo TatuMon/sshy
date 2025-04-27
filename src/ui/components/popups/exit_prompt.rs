@@ -1,6 +1,6 @@
 
 use ratatui::{
-    layout::Alignment, style::Color, text::Text, widgets::{block::Position, Block, BorderType, Borders, Clear, Paragraph}, Frame
+    layout::Alignment, text::Text, widgets::{block::Position, Block, BorderType, Borders, Clear, Paragraph}, Frame
 };
 
 use crate::ui::ui_utils::{centered_rect_for_paragraph, styles};

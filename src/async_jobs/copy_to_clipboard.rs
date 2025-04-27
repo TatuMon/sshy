@@ -20,14 +20,14 @@ async fn handle_copy_to_clipboard(content: String, msg_tx: mpsc::Sender<Message>
             Err(err) => {
                 msg_tx.send(Message::PrintError(format!(
                     "Failed to copy to clipboard: {}",
-                    err.to_string()
+                    err
                 ))).expect("Failed to send error notice");
             }
         },
         Err(err) => {
             msg_tx.send(Message::PrintError(format!(
                 "Failed to load clipboard: {}",
-                err.to_string()
+                err
             ))).expect("Failed to send error notice");
         }
     };

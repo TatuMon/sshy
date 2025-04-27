@@ -92,7 +92,7 @@ pub fn delete_key_pair(private_key_name: &str) -> Result<()> {
     }
 
 
-    return Ok(())
+    Ok(())
 }
 
 pub fn get_pub_key_content(key_name: &str) -> Result<String> {
