@@ -5,8 +5,9 @@ use crate::{
     ui::{components::sections::Section, widgets::blocks},
 };
 
-const TOOLTIPS: [&str; 5] = [
+const TOOLTIPS: [&str; 6] = [
     "(q) quit | (→) next section | (←) previous section | (↑|↓) navigate section",
+    "(q) quit | (c) copy public key | (→) next section | (←) previous section | (↑|↓) navigate section",
     "(q) quit | (Enter) interactive mode",
     "(q) quit interactive mode | (ctrl+s) write to file | (h|j|k|l) navigate | (i) insert mode | (v) visual mode | (y) yank",
     "(Esc) normal mode | (h|j|k|l) navigate | (y) yank",
@@ -16,13 +17,14 @@ const TOOLTIPS: [&str; 5] = [
 pub fn draw_footer(f: &mut Frame, rect: &Rect, model: &Model) {
     let curr_tooltip = match model.get_current_section() {
         Section::ClientConfig if !model.get_client_config_state().is_interactive_on() => {
-            TOOLTIPS[1]
+            TOOLTIPS[2]
         }
         Section::ClientConfig => match model.get_client_config_state().get_vim_state().get_mode() {
-            VimMode::Normal => TOOLTIPS[2],
-            VimMode::Visual => TOOLTIPS[3],
-            _ => TOOLTIPS[4],
+            VimMode::Normal => TOOLTIPS[3],
+            VimMode::Visual => TOOLTIPS[4],
+            _ => TOOLTIPS[5],
         },
+        Section::PublicKeysList => TOOLTIPS[1],
         _ => TOOLTIPS[0],
     };
 
